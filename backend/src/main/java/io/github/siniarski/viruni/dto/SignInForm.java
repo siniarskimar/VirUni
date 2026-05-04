@@ -11,6 +11,9 @@ public class SignInForm {
     @NotBlank
     private String password;
 
+    protected SignInForm() {
+    }
+
     public SignInForm(String username, String password) {
         this.username = username;
         this.password = password;
