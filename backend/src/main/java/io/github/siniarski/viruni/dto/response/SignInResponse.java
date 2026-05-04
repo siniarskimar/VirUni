@@ -1,11 +1,11 @@
-package io.github.siniarski.viruni.dto;
+package io.github.siniarski.viruni.dto.response;
 
-import io.github.siniarski.viruni.security.JwtDetails;
+import io.github.siniarski.viruni.security.jwt.JwtDetails;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 
-public class JwtResponse {
+public class SignInResponse {
     private String token;
     private String type = "Bearer";
     private long tokenExpires;
@@ -13,12 +13,12 @@ public class JwtResponse {
     private String username;
     private Collection<String> authorities;
 
-    protected JwtResponse() {}
+    protected SignInResponse() {}
 
-    public JwtResponse(JwtDetails jwtDetails,
-                       String username,
-                       long accountId,
-                       Collection<? extends GrantedAuthority> authorities) {
+    public SignInResponse(JwtDetails jwtDetails,
+                          String username,
+                          long accountId,
+                          Collection<? extends GrantedAuthority> authorities) {
         this.token = jwtDetails.getToken();
         this.tokenExpires = jwtDetails.getExpires().getEpochSecond();
         this.username = username;

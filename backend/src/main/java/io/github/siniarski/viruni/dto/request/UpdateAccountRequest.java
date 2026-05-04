@@ -1,6 +1,6 @@
-package io.github.siniarski.viruni.dto;
+package io.github.siniarski.viruni.dto.request;
 
-public class UpdateAccountForm {
+public class UpdateAccountRequest {
     private String firstname;
     private String lastname;
 

@@ -1,9 +1,8 @@
-package io.github.siniarski.viruni.dto;
+package io.github.siniarski.viruni.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
-public class SignInForm {
+public class SignInRequest {
 
     @NotBlank
     private String username;
@@ -11,10 +10,10 @@ public class SignInForm {
     @NotBlank
     private String password;
 
-    protected SignInForm() {
+    protected SignInRequest() {
     }
 
-    public SignInForm(String username, String password) {
+    public SignInRequest(String username, String password) {
         this.username = username;
         this.password = password;
     }

@@ -1,11 +1,11 @@
-package io.github.siniarski.viruni.dto;
+package io.github.siniarski.viruni.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.siniarski.viruni.model.AccountRole;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public class SignUpForm {
+public class SignUpRequest {
     @NotBlank
     @Size(min=4, max=64)
     private String username;

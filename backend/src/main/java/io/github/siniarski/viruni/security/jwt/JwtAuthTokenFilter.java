@@ -1,6 +1,6 @@
-package io.github.siniarski.viruni.security;
+package io.github.siniarski.viruni.security.jwt;
 
-import io.github.siniarski.viruni.auth.AccountDetailsServiceImpl;
+import io.github.siniarski.viruni.security.auth.AccountDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

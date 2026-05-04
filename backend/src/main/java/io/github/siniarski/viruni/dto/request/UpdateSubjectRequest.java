@@ -1,6 +1,6 @@
-package io.github.siniarski.viruni.dto;
+package io.github.siniarski.viruni.dto.request;
 
-public class UpdateSubjectForm {
+public class UpdateSubjectRequest {
     private String name;
     private String description;
 

@@ -1,15 +1,16 @@
 package io.github.siniarski.viruni.controller;
 
 import io.github.siniarski.viruni.RestResponse;
-import io.github.siniarski.viruni.dto.*;
+import io.github.siniarski.viruni.dto.request.CreateSubjectRequest;
+import io.github.siniarski.viruni.dto.request.UpdateSubjectRequest;
+import io.github.siniarski.viruni.dto.response.PagedResponse;
+import io.github.siniarski.viruni.dto.response.SubjectResponse;
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.model.Subject;
 import io.github.siniarski.viruni.security.SubjectPermissionService;
 import io.github.siniarski.viruni.security.SubjectPermissions;
-import io.github.siniarski.viruni.dto.*;
 import io.github.siniarski.viruni.service.RoleHierarchyService;
-import io.github.siniarski.viruni.model.*;
 import io.github.siniarski.viruni.repository.AccountRepository;
 import io.github.siniarski.viruni.repository.SubjectRepository;
 import io.github.siniarski.viruni.repository.SubjectSpecification;
@@ -51,11 +52,11 @@ public class SubjectController {
     }
 
     @GetMapping
-    public PageResponse<Subject> getMany(@PageableDefault() Pageable pageable,
-                                         @RequestParam(required = false) Long leadingTeacher,
-                                         @RequestParam(required = false) Long participant,
-                                         @RequestParam(required = false) Instant createdAfter,
-                                         @RequestParam(required = false) String query) {
+    public PagedResponse<Subject> getMany(@PageableDefault() Pageable pageable,
+                                          @RequestParam(required = false) Long leadingTeacher,
+                                          @RequestParam(required = false) Long participant,
+                                          @RequestParam(required = false) Instant createdAfter,
+                                          @RequestParam(required = false) String query) {
         List<Specification<Subject>> specs = new ArrayList<>();
 
         if(participant != null) specs.add(SubjectSpecification.hasParticipant((participant)));
@@ -63,22 +64,22 @@ public class SubjectController {
         if(leadingTeacher != null) specs.add(SubjectSpecification.hasLeadingTeacher(leadingTeacher));
         if(query != null) specs.add(SubjectSpecification.nameOrleadingTeacherFullnameContaining(query));
 
-        if(specs.isEmpty()) return new PageResponse<>(subjectRepository.findAll(pageable));
+        if(specs.isEmpty()) return new PagedResponse<>(subjectRepository.findAll(pageable));
 
-        return new PageResponse<>(subjectRepository.findAll(Specification.allOf(specs), pageable));
+        return new PagedResponse<>(subjectRepository.findAll(Specification.allOf(specs), pageable));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SubjectDTO> getOne(@PathVariable long id, Authentication auth) {
+    public ResponseEntity<SubjectResponse> getOne(@PathVariable long id, Authentication auth) {
         Subject subject = subjectRepository.findById(id).orElse(null);
         if(subject == null) return RestResponse.notFound();
 
         SubjectPermissions perms = this.subjectPermissionService.computePermissions(subject, auth);
-        SubjectDTO responseObject = new SubjectDTO(subject, perms);
+        SubjectResponse responseObject = new SubjectResponse(subject, perms);
         return RestResponse.ok(responseObject);
     }
 
-    private ResponseEntity<?> create(CreateSubjectForm form, Account leadingTeacher, Authentication auth) {
+    private ResponseEntity<?> create(CreateSubjectRequest form, Account leadingTeacher, Authentication auth) {
         Subject subject = new Subject(form.getName(), leadingTeacher);
         if(form.getParticipants() != null) {
             // TODO: move batch participant add to separate endpoint
@@ -99,11 +100,11 @@ public class SubjectController {
         this.subjectRepository.save(subject);
 
         SubjectPermissions perms = this.subjectPermissionService.computePermissions(subject, auth);
-        SubjectDTO responseObject = new SubjectDTO(subject, perms);
+        SubjectResponse responseObject = new SubjectResponse(subject, perms);
         return RestResponse.created(responseObject);
     }
 
-    private ResponseEntity<?> createOneByAdmin(CreateSubjectForm form, Authentication auth) {
+    private ResponseEntity<?> createOneByAdmin(CreateSubjectRequest form, Authentication auth) {
         String leadingTeacherName = (form.getLeadingTeacherUsername() != null)
                                     ? form.getLeadingTeacherUsername()
                                     : auth.getName();
@@ -120,7 +121,7 @@ public class SubjectController {
 
     @PostMapping
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<?> createOne(@RequestBody @Valid CreateSubjectForm subjectDTO, Authentication auth) {
+    public ResponseEntity<?> createOne(@RequestBody @Valid CreateSubjectRequest subjectDTO, Authentication auth) {
         boolean hasAdminRole = roleHierarchyService.hasRoleImplied(AccountRole.ADMIN, auth);
         if(hasAdminRole) return createOneByAdmin(subjectDTO, auth);
 
@@ -144,11 +145,11 @@ public class SubjectController {
 
     @PostMapping("/{id}/account")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<?> assignAccount(@PathVariable long id, @Valid @RequestBody AssignAccountToSubjectForm form) {
+    public ResponseEntity<?> assignAccount(@PathVariable long id, @Valid @RequestBody long accountId) {
         Subject subject = subjectRepository.findById(id).orElse(null);
         if(subject == null) return RestResponse.notFound();
 
-        Account account = accountRepository.findById(form.getAccountId()).orElse(null);
+        Account account = accountRepository.findById(accountId).orElse(null);
         if(account == null) return RestResponse.badRequest("student not found");
 
         subjectPermissionService.evictFromCache(subject, account);
@@ -176,7 +177,7 @@ public class SubjectController {
 
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<?> update(@PathVariable long id, @Valid @RequestBody UpdateSubjectForm updates, Authentication auth) {
+    public ResponseEntity<?> update(@PathVariable long id, @Valid @RequestBody UpdateSubjectRequest updates, Authentication auth) {
         Subject subject = subjectRepository.findById(id).orElse(null);
         if(subject == null) return RestResponse.notFound();
 
@@ -187,7 +188,7 @@ public class SubjectController {
 
 
         SubjectPermissions perms = this.subjectPermissionService.computePermissions(subject, auth);
-        SubjectDTO responseObject = new SubjectDTO(subject, perms);
+        SubjectResponse responseObject = new SubjectResponse(subject, perms);
         return RestResponse.ok(responseObject);
     }
 }

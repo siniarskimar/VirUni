@@ -1,4 +1,4 @@
-package io.github.siniarski.viruni.auth;
+package io.github.siniarski.viruni.security.auth;
 
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.repository.AccountRepository;

@@ -2,7 +2,7 @@ package io.github.siniarski.viruni.controller;
 
 import io.github.siniarski.viruni.RestResponse;
 import io.github.siniarski.viruni.service.TeacherTokenService;
-import io.github.siniarski.viruni.dto.CreateTeacherTokenForm;
+import io.github.siniarski.viruni.dto.request.CreateTeacherTokenRequest;
 import io.github.siniarski.viruni.model.TeacherRegistrationToken;
 import io.github.siniarski.viruni.repository.TeacherRegistrationTokenRegistry;
 import jakarta.validation.Valid;
@@ -36,7 +36,7 @@ public class TeacherTokenController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TeacherRegistrationToken> createTeacherToken(@RequestBody @Valid CreateTeacherTokenForm form) {
+    public ResponseEntity<TeacherRegistrationToken> createTeacherToken(@RequestBody @Valid CreateTeacherTokenRequest form) {
         try {
             Instant expires = form.getExpires();
             if(expires == null) expires = Instant.now().plusSeconds(24 * 60 * 60);

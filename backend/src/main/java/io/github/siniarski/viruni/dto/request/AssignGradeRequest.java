@@ -1,10 +1,9 @@
-package io.github.siniarski.viruni.dto;
+package io.github.siniarski.viruni.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public class AssignGradeForm {
+public class AssignGradeRequest {
     @JsonProperty("subject")
     @NotNull(message = "grade must reference a subject id")
     private Long subjectId;

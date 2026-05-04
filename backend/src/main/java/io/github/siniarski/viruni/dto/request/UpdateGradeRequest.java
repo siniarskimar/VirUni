@@ -1,6 +1,6 @@
-package io.github.siniarski.viruni.dto;
+package io.github.siniarski.viruni.dto.request;
 
-public class UpdateGradeForm {
+public class UpdateGradeRequest {
     private Float value;
 
     public Float getValue() {

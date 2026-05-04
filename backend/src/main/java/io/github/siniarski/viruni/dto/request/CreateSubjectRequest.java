@@ -1,10 +1,10 @@
-package io.github.siniarski.viruni.dto;
+package io.github.siniarski.viruni.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 
 import java.util.Set;
 
-public class CreateSubjectForm {
+public class CreateSubjectRequest {
     @NotBlank
     private String name;
 

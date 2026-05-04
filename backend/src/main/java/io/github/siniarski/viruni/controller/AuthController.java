@@ -1,18 +1,18 @@
 package io.github.siniarski.viruni.controller;
 
 import io.github.siniarski.viruni.RestResponse;
-import io.github.siniarski.viruni.auth.AccountPrinciple;
-import io.github.siniarski.viruni.dto.ChangePasswordForm;
-import io.github.siniarski.viruni.dto.JwtResponse;
-import io.github.siniarski.viruni.dto.SignInForm;
-import io.github.siniarski.viruni.dto.SignUpForm;
+import io.github.siniarski.viruni.security.auth.AccountPrinciple;
+import io.github.siniarski.viruni.dto.request.ChangePasswordRequest;
+import io.github.siniarski.viruni.dto.response.SignInResponse;
+import io.github.siniarski.viruni.dto.request.SignInRequest;
+import io.github.siniarski.viruni.dto.request.SignUpRequest;
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.model.TeacherRegistrationToken;
 import io.github.siniarski.viruni.repository.AccountRepository;
 import io.github.siniarski.viruni.repository.TeacherRegistrationTokenRegistry;
-import io.github.siniarski.viruni.security.JwtDetails;
-import io.github.siniarski.viruni.security.JwtProvider;
+import io.github.siniarski.viruni.security.jwt.JwtDetails;
+import io.github.siniarski.viruni.security.jwt.JwtProvider;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,7 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody SignInForm signinRequest) {
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody SignInRequest signinRequest) {
         Authentication authentication = daoAuthenticationProvider.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         signinRequest.getUsername(),
@@ -63,11 +63,11 @@ public class AuthController {
         JwtDetails jwtDetails = jwtProvider.generateJwtToken(authentication);
         AccountPrinciple userDetails = (AccountPrinciple) authentication.getPrincipal();
 
-        return RestResponse.ok(new JwtResponse(jwtDetails, userDetails.getUsername(), userDetails.getId(), userDetails.getAuthorities()));
+        return RestResponse.ok(new SignInResponse(jwtDetails, userDetails.getUsername(), userDetails.getId(), userDetails.getAuthorities()));
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpForm signupRequest) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signupRequest) {
         if(accountRepository.existsByUsername(signupRequest.getUsername())) {
             return RestResponse.conflict("Username already taken");
         }
@@ -105,7 +105,7 @@ public class AuthController {
 
     @PostMapping("/account/password")
     public ResponseEntity<?> changePassword(Principal principal,
-                                            @RequestBody @Valid ChangePasswordForm form) {
+                                            @RequestBody @Valid ChangePasswordRequest form) {
         Account account = accountRepository.findByUsername(principal.getName()).orElse(null);
         if(account == null) return RestResponse.notFound("account not found");
 
@@ -118,7 +118,7 @@ public class AuthController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> changePasswordOfAccount(Principal principal,
                                                      @PathVariable long id,
-                                                     @RequestBody @Valid ChangePasswordForm form) {
+                                                     @RequestBody @Valid ChangePasswordRequest form) {
         Account account = accountRepository.findById(id).orElse(null);
         if(account == null) return RestResponse.notFound();
 
@@ -127,14 +127,14 @@ public class AuthController {
     }
 
     @PostMapping("/auth/renew")
-    public ResponseEntity<JwtResponse> renewToken(Authentication auth) {
+    public ResponseEntity<SignInResponse> renewToken(Authentication auth) {
         if(!accountRepository.existsByUsername(auth.getName())) {
             return RestResponse.notFound();
         }
         JwtDetails jwtDetails = jwtProvider.generateJwtToken(auth);
         AccountPrinciple userDetails = (AccountPrinciple) auth.getPrincipal();
 
-        return RestResponse.ok(new JwtResponse(jwtDetails, userDetails.getUsername(), userDetails.getId(), userDetails.getAuthorities()));
+        return RestResponse.ok(new SignInResponse(jwtDetails, userDetails.getUsername(), userDetails.getId(), userDetails.getAuthorities()));
     }
 
     @PostMapping("/account")

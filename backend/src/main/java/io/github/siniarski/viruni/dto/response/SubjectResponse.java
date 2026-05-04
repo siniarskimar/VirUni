@@ -1,4 +1,4 @@
-package io.github.siniarski.viruni.dto;
+package io.github.siniarski.viruni.dto.response;
 
 import io.github.siniarski.viruni.security.SubjectPermissions;
 import io.github.siniarski.viruni.model.Account;
@@ -6,7 +6,7 @@ import io.github.siniarski.viruni.model.Subject;
 
 import java.time.Instant;
 
-public class SubjectDTO {
+public class SubjectResponse {
     private long id;
     private String name;
     private String description;
@@ -15,7 +15,7 @@ public class SubjectDTO {
 
     private SubjectPermissions permissions;
 
-    public SubjectDTO(Subject subject, SubjectPermissions permissions) {
+    public SubjectResponse(Subject subject, SubjectPermissions permissions) {
         this.id = subject.getId();
         this.name = subject.getName();
         this.description = subject.getDescription();

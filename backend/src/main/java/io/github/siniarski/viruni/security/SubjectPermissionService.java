@@ -1,6 +1,6 @@
 package io.github.siniarski.viruni.security;
 
-import io.github.siniarski.viruni.auth.AccountPrinciple;
+import io.github.siniarski.viruni.security.auth.AccountPrinciple;
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.model.Subject;

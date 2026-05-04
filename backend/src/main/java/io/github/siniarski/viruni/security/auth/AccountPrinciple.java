@@ -1,4 +1,4 @@
-package io.github.siniarski.viruni.auth;
+package io.github.siniarski.viruni.security.auth;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.siniarski.viruni.model.Account;

@@ -1,8 +1,8 @@
 package io.github.siniarski.viruni.controller;
 
 import io.github.siniarski.viruni.RestResponse;
-import io.github.siniarski.viruni.dto.PageResponse;
-import io.github.siniarski.viruni.dto.UpdateAccountForm;
+import io.github.siniarski.viruni.dto.response.PagedResponse;
+import io.github.siniarski.viruni.dto.request.UpdateAccountRequest;
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.model.Grade;
@@ -32,10 +32,10 @@ public class AccountController {
     }
 
     @GetMapping
-    public PageResponse<Account> getMany(@PageableDefault Pageable pageable,
-                                         @RequestParam(required = false) AccountRole role,
-                                         @RequestParam(required = false) String query,
-                                         @RequestParam(required = false) Long subjectId) {
+    public PagedResponse<Account> getMany(@PageableDefault Pageable pageable,
+                                          @RequestParam(required = false) AccountRole role,
+                                          @RequestParam(required = false) String query,
+                                          @RequestParam(required = false) Long subjectId) {
         List<Specification<Account>> specs = new ArrayList<>();
 
         if(role != null) specs.add(AccountSpecification.hasRole(role));
@@ -47,8 +47,8 @@ public class AccountController {
         }
         if(subjectId != null) specs.add(AccountSpecification.isParticipantOf(subjectId));
 
-        if(specs.isEmpty()) return new PageResponse<>(this.accountRepository.findAll(pageable));
-        return new PageResponse<>(this.accountRepository.findAll(Specification.allOf(specs), pageable));
+        if(specs.isEmpty()) return new PagedResponse<>(this.accountRepository.findAll(pageable));
+        return new PagedResponse<>(this.accountRepository.findAll(Specification.allOf(specs), pageable));
     }
 
     @GetMapping("/{identifier}")
@@ -93,7 +93,7 @@ public class AccountController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Object> updateOne(@PathVariable long id, @Valid @RequestBody UpdateAccountForm form) {
+    public ResponseEntity<Object> updateOne(@PathVariable long id, @Valid @RequestBody UpdateAccountRequest form) {
         Account account = accountRepository.findById(id).orElse(null);
         if(account == null) return RestResponse.notFound();
 

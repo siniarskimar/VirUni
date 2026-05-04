@@ -1,8 +1,8 @@
-package io.github.siniarski.viruni.dto;
+package io.github.siniarski.viruni.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 
-public class ChangePasswordForm {
+public class ChangePasswordRequest {
     @NotBlank
     private String password;
 

@@ -1,6 +1,6 @@
-package io.github.siniarski.viruni.security;
+package io.github.siniarski.viruni.security.jwt;
 
-import io.github.siniarski.viruni.auth.AccountPrinciple;
+import io.github.siniarski.viruni.security.auth.AccountPrinciple;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;

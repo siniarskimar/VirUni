@@ -1,11 +1,9 @@
 package io.github.siniarski.viruni.controller;
 
 import io.github.siniarski.viruni.RestResponse;
-import io.github.siniarski.viruni.dto.AssignGradeForm;
-import io.github.siniarski.viruni.dto.PageResponse;
-import io.github.siniarski.viruni.dto.UpdateGradeForm;
-import io.github.siniarski.viruni.model.*;
-import io.github.siniarski.viruni.repository.*;
+import io.github.siniarski.viruni.dto.request.AssignGradeRequest;
+import io.github.siniarski.viruni.dto.response.PagedResponse;
+import io.github.siniarski.viruni.dto.request.UpdateGradeRequest;
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.model.Grade;
@@ -57,14 +55,14 @@ public class GradeController {
         if(teacher != null) specs.add(GradeSpecification.assignedByTeacher(teacher));
         if(subject != null) specs.add(GradeSpecification.ofSubject(subject));
 
-        if(specs.isEmpty()) return RestResponse.ok(new PageResponse<>(this.gradeRepository.findAll(pageable)));
+        if(specs.isEmpty()) return RestResponse.ok(new PagedResponse<>(this.gradeRepository.findAll(pageable)));
 
-        return RestResponse.ok(new PageResponse<>(this.gradeRepository.findAll(Specification.allOf(specs), pageable)));
+        return RestResponse.ok(new PagedResponse<>(this.gradeRepository.findAll(Specification.allOf(specs), pageable)));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<?> assignOne(@RequestBody @Valid AssignGradeForm gradeForm, Authentication auth) {
+    public ResponseEntity<?> assignOne(@RequestBody @Valid AssignGradeRequest gradeForm, Authentication auth) {
         Subject subject = subjectRepository.findById(gradeForm.getSubjectId()).orElse(null);
         Account student = accountRepository.findByRoleAndId(AccountRole.USER, gradeForm.getStudentId()).orElse(null);
         Account teacher = accountRepository.findById(gradeForm.getTeacherId()).orElse(null);
@@ -119,7 +117,7 @@ public class GradeController {
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<?> updateOne(@PathVariable long id,
-                                           @Valid @RequestBody UpdateGradeForm form,
+                                           @Valid @RequestBody UpdateGradeRequest form,
                                            Authentication auth) {
         Grade grade = gradeRepository.findById(id).orElse(null);
         if(grade == null) return RestResponse.notFound();

@@ -1,10 +1,10 @@
-package io.github.siniarski.viruni.dto;
+package io.github.siniarski.viruni.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
 
-public class CreateTeacherTokenForm {
+public class CreateTeacherTokenRequest {
     @NotNull
     private Boolean reusable;
 

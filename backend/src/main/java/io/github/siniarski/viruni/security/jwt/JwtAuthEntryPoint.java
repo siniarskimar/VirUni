@@ -1,4 +1,4 @@
-package io.github.siniarski.viruni.security;
+package io.github.siniarski.viruni.security.jwt;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

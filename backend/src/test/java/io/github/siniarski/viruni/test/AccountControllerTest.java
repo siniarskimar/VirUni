@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.*;
 
 import java.util.List;
 
-import io.github.siniarski.viruni.dto.JwtResponse;
+import io.github.siniarski.viruni.dto.response.SignInResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import io.github.siniarski.viruni.dto.SignInForm;
+import io.github.siniarski.viruni.dto.request.SignInRequest;
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.repository.AccountRepository;
@@ -58,7 +58,7 @@ public class AccountControllerTest {
         accountRepository.saveAll(mockAccounts);
     }
 
-    JwtResponse authorizeAs(SignInForm form) {
+    SignInResponse authorizeAs(SignInRequest form) {
         var resp = given()
                 .contentType(ContentType.JSON)
                 .body(form)
@@ -66,10 +66,10 @@ public class AccountControllerTest {
 
         resp.then().statusCode(200);
 
-        return resp.as(JwtResponse.class);
+        return resp.as(SignInResponse.class);
     }
 
-    RequestSpecification getRequestSpecification(JwtResponse auth) {
+    RequestSpecification getRequestSpecification(SignInResponse auth) {
         RequestSpecBuilder builder = new RequestSpecBuilder();
         builder.addHeader("Authorization", "Bearer " + auth.getToken());
         return builder.build();
@@ -78,7 +78,7 @@ public class AccountControllerTest {
     @Test
     public void shouldGetAccount() {
         insertMockAccounts();
-        var authorization = authorizeAs(new SignInForm("aliciaprice", "magics"));
+        var authorization = authorizeAs(new SignInRequest("aliciaprice", "magics"));
         var requestSpec = getRequestSpecification(authorization);
 
         given()
