@@ -1,0 +1,18 @@
+<search class="search-wrapper">
+    <app-searchbox [(query)]="query" (focus)="inputFocused.set(true)" (blur)="inputFocused.set(false)"
+        [placeholder]="placeholder()"></app-searchbox>
+    <div class="searchbox-results" [class.results-hidden]="!resultsVisible()" (mouseenter)="mouseHoverResults.set(true)"
+        (mouseleave)="mouseHoverResults.set(false)" style="z-index: 99999;">
+
+        @for(account of results(); track account.id) {
+        <button class="searchbox-result" (click)="onResultClicked(account)">
+            @if(showUsername()) {
+            {{account.username}}
+            }
+            @if (showFullname()) {
+            {{account.firstname}} {{account.lastname}}
+            }
+        </button>
+        }
+    </div>
+</search>

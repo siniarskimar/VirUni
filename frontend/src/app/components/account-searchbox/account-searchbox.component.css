@@ -1,0 +1,24 @@
+.search-wrapper {
+    position: relative;
+}
+
+.searchbox-results {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+
+    background-color: aliceblue;
+}
+
+.searchbox-result {
+    border: none;
+    background: transparent;
+}
+
+.searchbox-result:hover {
+    outline: 1px solid;
+}
+
+.searchbox-results.results-hidden {
+    display: none;
+}

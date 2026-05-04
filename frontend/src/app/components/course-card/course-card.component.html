@@ -1,0 +1,7 @@
+<div class="course-card box" (click)="this.onClick()" role="link">
+    @let course = this.course();
+    @let teacherFullname = this.teacherFullname();
+
+    <p class="course-name title is-4">{{course ? course.name : "loading"}}</p>
+    <p class="course-teacher subtitle is-6">{{teacherFullname ? teacherFullname : "loading"}}</p>
+</div>

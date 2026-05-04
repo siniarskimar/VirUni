@@ -1,0 +1,35 @@
+<nav class="navbar" role="navigation">
+  <div class="navbar-brand">
+    <a class="navbar-item" routerLink="/">Viruni</a>
+
+    <a role="button" class="navbar-burger" [class.is-active]="navIsActive" aria-label="menu" aria-expanded="false"
+      data-target="navbarContent" (click)="navIsActive = !navIsActive">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+
+  <div id="navbarContent" class="navbar-menu" [class.is-active]="navIsActive">
+    <div class="navbar-start">
+      @if(accountSession(); as session){
+      @if(session.canBrowseCourses()) {
+      <a routerLink="/courses" class="navbar-item">Courses</a>
+      }
+      }
+
+    </div>
+
+    <div class="navbar-end">
+      @if(accountSession(); as session){
+      <a routerLink="/account/{{session.account.id}}" class="navbar-item">My account</a>
+      <button (click)="this.signOut()" class="button">Sign out</button>
+
+      }
+    </div>
+  </div>
+</nav>
+
+<router-outlet />
+<app-modal-host></app-modal-host>

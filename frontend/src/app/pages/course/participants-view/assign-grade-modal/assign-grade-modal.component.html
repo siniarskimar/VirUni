@@ -1,0 +1,18 @@
+<p class="subtitle is-6">{{course()?.name || "loading"}}</p>
+<h1 class="title is-3">Assign grade</h1>
+<p>
+    Accounts:
+    @for(account of accounts(); track account.id) {
+    <app-account-pill [account]="account"></app-account-pill>
+    }
+</p>
+<app-account-searchbox (clickResult)="this.addAccount($event)" style="width: 2rem;"
+    [course]="course()"></app-account-searchbox>
+<div>
+
+</div>
+<div>
+    <label for="grade-value">Value:</label>
+    <input type="number" [value]="value()" (input)="value.set(v.valueAsNumber)" name="grade-value" #v>
+</div>
+<button class="button" (click)="confirm()">Ok</button>

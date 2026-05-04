@@ -1,0 +1,14 @@
+.grade-box {
+    display: inline;
+    /* background-color: rgb(240, 240, 240); */
+
+    padding: 0.4rem;
+    margin: 0.3rem;
+    cursor: pointer;
+
+    -moz-user-select: none;
+    -webkit-touch-callout: none;
+    user-select: none;
+
+    padding: 0.6rem;
+}

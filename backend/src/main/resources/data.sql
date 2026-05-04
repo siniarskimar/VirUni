@@ -1,0 +1,3 @@
+INSERT INTO account_role (id, name) SELECT 1, 'ROLE_USER' WHERE NOT EXISTS (SELECT * FROM account_role WHERE account_role.name = 'ROLE_USER');
+INSERT INTO account_role (id, name) SELECT 2, 'ROLE_TEACHER' WHERE NOT EXISTS (SELECT * FROM account_role WHERE account_role.name = 'ROLE_TEACHER');
+INSERT INTO account_role (id, name) SELECT 3, 'ROLE_ADMIN' WHERE NOT EXISTS (SELECT * FROM account_role WHERE account_role.name = 'ROLE_ADMIN');

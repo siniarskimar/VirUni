@@ -1,0 +1,15 @@
+@if (grade(); as grade) {
+<p class="subtitle is-6">{{grade.subject.name}}</p>
+<h1 class="title is-3">Grade</h1>
+@if(editable) {
+<input type="number" [value]="value()" (change)="value.set(v.valueAsNumber)" #v>
+} @else {
+<p class="is-4">Value: {{grade.value}}</p>
+}
+<p class="is-4">Assigned by {{grade.teacher.firstname}} {{grade.teacher.lastname}}</p>
+<p class="is-4">Assigned to {{grade.student.firstname}} {{grade.student.lastname}}</p>
+<button class="button" (click)="updateGrade()">Ok</button>
+@if(editable) {
+<button class="button">Cancel</button>
+}
+}

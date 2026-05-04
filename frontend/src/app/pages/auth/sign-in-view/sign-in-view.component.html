@@ -1,0 +1,11 @@
+<form (submit)="onSubmit($event)">
+
+    <div class="field">
+        <label for="signin-username">Username: </label>
+        <input type="text" name="username" id="signin-username" class="input" #username>
+    </div>
+
+    <app-password-input name="password" label="Password"></app-password-input>
+
+    <button type="submit" class="button">Sign In</button>
+</form>

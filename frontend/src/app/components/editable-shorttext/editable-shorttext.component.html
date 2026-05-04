@@ -1,0 +1,12 @@
+<div class="editable-shorttext">
+    @if(!editing || readOnly()) {
+    <ng-content></ng-content>
+    @if(!readOnly()) {
+    <button (click)="editing = true" class="button is-small btn">Edit</button>
+    }
+    } @else {
+    <input type="text" [value]="text()" #newtext>
+    <button (click)="this.editConfimed.emit(newtext.value); editing = false" class="button is-small btn">Accept</button>
+    <button (click)="editing = false" class="button is-small btn">Discard</button>
+    }
+</div>

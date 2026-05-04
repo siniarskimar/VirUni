@@ -1,0 +1,6 @@
+
+watch:
+    watchexec -w src -- gradle bootRun
+
+build:
+    ./gradlew bootJar

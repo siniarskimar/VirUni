@@ -1,0 +1,15 @@
+.course-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+
+    margin: 0.3rem;
+    max-width: 20rem;
+    min-height: 8rem;
+
+    cursor: pointer;
+}
+
+p {
+    margin: 0;
+}

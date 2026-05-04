@@ -1,0 +1,39 @@
+<table class="table is-striped is-bordered is-fullwidth">
+    <thead>
+        <tr>
+            <th colspan="2">
+                <div class="controls">
+                    <app-searchbox [(query)]="query" placeholder="Search participant"></app-searchbox>
+                    <nav class="pagination" role="navigation" aria-label="pagination">
+                        <a class="pagination-previous" (click)="gotoPrevPage()">Previous</a>
+                        <a class="pagination-next" (click)="gotoNextPage()">Next page</a>
+                    </nav>
+                </div>
+            </th>
+        </tr>
+        <tr>
+            <th width="30%">Participant</th>
+            <th>Grades</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if(participants(); as participants) {
+
+        @for(participant of participants.content; track participant.id) {
+        <tr>
+            <td width="30%">
+                <p>
+                    {{participant.firstname}} {{participant.lastname}} <span
+                        class="is-italic">{{participant.username}}</span>
+                </p>
+                <button class="button is-danger is-light" (click)="removeParticipant(participant)">Remove</button>
+            </td>
+            <td>
+                <app-course-grade-list [account]="participant" [course]="course()"
+                    (gradeClick)="gradeClicked.emit($event)"></app-course-grade-list>
+            </td>
+        </tr>
+        }
+        }
+    </tbody>
+</table>

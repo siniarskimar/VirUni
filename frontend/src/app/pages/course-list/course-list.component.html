@@ -1,0 +1,14 @@
+<div class="wrapper">
+    <section class="hero">
+        <div class="hero-body">
+            <h2 class="title is-2">Courses</h2>
+            <app-course-pager [(courses)]="courses"></app-course-pager>
+
+            @if(courses().length === 0) {
+            <p>There are no courses to show</p>
+            }
+
+        </div>
+
+    </section>
+</div>

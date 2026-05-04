@@ -1,0 +1,26 @@
+<div class="container">
+    <section class="section">
+        <h1 class="title is-3">Create registration token</h1>
+        <form
+            (submit)="$event.preventDefault(); generateToken(tokenReusable.checked, tokenExpires.valueAsDate || undefined)"
+            class="box">
+            <div class="block">
+                <div class="field">
+                    <label class="label">Reusable:
+                        <input type="checkbox" class="checkbox" #tokenReusable>
+                    </label>
+                </div>
+                <div class="field">
+                    <label class="label">Expires:
+                        <input type="datetime-local" #tokenExpires>
+                    </label>
+                </div>
+                <button class="button" type="submit">Generate</button>
+            </div>
+            @if(generatedToken(); as token) {
+            <p>Token: {{token}}</p>
+            }
+        </form>
+
+    </section>
+</div>

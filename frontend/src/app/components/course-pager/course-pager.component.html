@@ -1,0 +1,12 @@
+<div class="pager">
+
+    <div class="list">
+        @for (course of courses(); track course.id) {
+        <app-course-card [course]="course" (clicked)="this.courseClicked.emit(course)"></app-course-card>
+        }
+    </div>
+
+    @if(hasMore()) {
+    <input type="button" value="Show more" class="button" (click)="fetchCourses()">
+    }
+</div>

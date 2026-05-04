@@ -1,0 +1,15 @@
+<div style="width: 20rem">
+    <p class="subtitle is-6">{{course()?.name || "loading"}}</p>
+    <h1 class="title is-3">Assign grade</h1>
+    <div class="is-size-6">
+        Accounts:
+        @for(account of accounts(); track account.id) {
+        <app-account-pill [account]="account" (click)="removeAccount($event)"></app-account-pill>
+        }
+    </div>
+    <app-account-searchbox (clickResult)="this.addAccount($event)"></app-account-searchbox>
+    <div>
+
+    </div>
+    <button class="button" (click)="confirm()">Ok</button>
+</div>

@@ -1,0 +1,37 @@
+<form (submit)="onSubmit($event)">
+
+    <div class="field">
+        <label for="signup-username">Username: </label>
+        <input class="input" type="text" name="username" id="signup-username" #username>
+    </div>
+
+    <div class="field">
+        <label for="signup-password">Password: </label>
+        <input class="input" type="password" name="password" id="signup-password" #password>
+    </div>
+
+    <div class="field">
+        <label for="signup-firstname">Firstname: </label>
+        <input class="input" type="text" name="firstname" id="signup-firstname" #firstname>
+    </div>
+
+    <div class="field">
+        <label for="signup-lastname">Lastname: </label>
+        <input class="input" type="text" name="lastname" id="signup-lastname" #lastname>
+    </div>
+
+    <div class="field">
+        <label for="signup-role-teacher">Are you a teacher?: </label>
+        <input class="checkbox" type="checkbox" id="signup-role-teacher" name="is-teacher"
+            (change)="this.setIsTeacher($event)">
+    </div>
+
+    @if(isTeacher) {
+    <div>
+        <label for="signup-teacher-token">Registration token:</label>
+        <input class="input" type="text" name="teacher-token" id="signup-teacher-token">
+    </div>
+    }
+
+    <button class="button" type="submit">Sign Up</button>
+</form>

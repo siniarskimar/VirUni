@@ -1,0 +1,23 @@
+<div class="container is-max-tablet">
+    <div class="box">
+        @if(account(); as account) {
+
+        <h2 class="title">{{account.firstname}} {{account.lastname}}</h2>
+        <p class="subtitle is-5">{{'@' + account.username}}</p>
+
+        }
+
+        <div>
+            @if(courses(); as courses) {
+            <p class="title is-4" role="heading">Courses: </p>
+            <ul>
+                @for(course of courses; track course.id) {
+                <li><a routerLink="/course/{{course.id}}">{{course.name}}</a></li>
+                }
+            </ul>
+            } @else {
+            <p>This user does not belong to any courses</p>
+            }
+        </div>
+    </div>
+</div>

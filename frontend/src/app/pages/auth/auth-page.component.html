@@ -1,0 +1,35 @@
+<div class="container box is-max-tablet">
+
+    @let authError = authenticationError();
+
+    @if (authError; as error) {
+    <p>{{error.message}}</p>
+    @if(error.cause; as cause) {
+    <p>{{$any(cause).message}}</p>
+    }
+    }
+
+    <div class="tabs">
+        <ul>
+            <li [class.is-active]="authOption === 'signin'">
+                <a (click)="authOption = 'signin'">Sign in</a>
+            </li>
+            <li [class.is-active]="authOption === 'signup'">
+                <a (click)="authOption = 'signup'">Sign up</a>
+            </li>
+        </ul>
+    </div>
+
+    <div>
+        @switch (authOption) {
+        @case ('signin') {
+        <app-sign-in-view (authenticated)="onAuthentication($event)"
+            (errorOccured)="this.authenticationError.set($event)"></app-sign-in-view>
+        }
+        @case ('signup') {
+        <app-sign-up-view (authenticated)="onAuthentication($event)"
+            (errorOccured)="this.authenticationError.set($event)"></app-sign-up-view>
+        }
+        }
+    </div>
+</div>

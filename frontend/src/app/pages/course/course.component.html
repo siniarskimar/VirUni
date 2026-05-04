@@ -1,0 +1,61 @@
+<div class="container">
+    @if(course(); as course) {
+
+    <section class="section box">
+
+        <app-editable-shorttext class="title is-2" (editConfimed)="this.updateCourseName($event)" [text]="course.name"
+            [readOnly]="!coursePermissions().canUpdate">
+            {{course.name}}
+        </app-editable-shorttext>
+
+        <p class="is-size-6">Course instructor: {{course.leadingTeacher.firstname}}
+            {{course.leadingTeacher.lastname}}
+        </p>
+        <p class="is-size-6">Created: {{creationDateLocalized() || "Loading"}}</p>
+
+        @if(course.description) {
+        <section class="section">
+            <h3 class="subtitle is-4">Description</h3>
+            <p>{{course.description}}</p>
+        </section>
+        } @else {
+        <p class="is-size-6">No description</p>
+        }
+
+        @if(activeSession()?.isTeacher()) {
+        <div class="buttons has-addons">
+
+            @if(course.permissions?.canManageAccounts) {
+            <button class="button" (click)="openAddParticipantModal()">Add participants</button>
+            }
+
+            @if (course.permissions?.canManageGrades) {
+            <button class="button" (click)="openAssignGradesModal()">Assign grades</button>
+            }
+
+            @if (course.permissions?.canDelete) {
+            <button class="button is-danger" (click)="onDeleteRequest()">Delete</button>
+            }
+        </div>
+        }
+
+    </section>
+    <section class="section box">
+
+        @if(course.permissions?.canManageGrades) {
+        <h2 class="title is-3">Participants</h2>
+        <app-course-participants-view [course]="course" [participants]="participants()"
+            (deleted)="onParticipantDeleteRequest($event)" [refreshTrigger]="refreshTrigger$"
+            (gradeClicked)="onGradeClick($event)"></app-course-participants-view>
+        } @else {
+        <h2 class="title is-3">My grades</h2>
+
+        <app-course-grade-list [account]="sessionAccount()" [course]="course" (gradeClick)="onGradeClick($event)">
+            <p>No grades have been assigned</p>
+        </app-course-grade-list>
+        }
+    </section>
+    } @else {
+    <p>Loading</p>
+    }
+</div>

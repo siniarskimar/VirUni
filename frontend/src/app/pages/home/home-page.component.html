@@ -1,0 +1,38 @@
+@if (accountSession(); as session) {
+
+
+<section class="hero">
+    <div class="hero-body">
+        @if(accountSession(); as session) {
+
+        <p class="title">Welcome {{session.account.firstname}} {{session.account.lastname}}</p>
+        } @else {
+        }
+    </div>
+</section>
+<div class="container">
+    <section class="section box">
+        <div class="block">
+            <h3 class="title is-3">Your courses</h3>
+            @if (canCreateSubjects()) {
+            <button (click)="openCreateCourseModal()" class="button is-small">Create course</button>
+            }
+        </div>
+        <app-course-pager [(courses)]="courses" [participant]="accountSession()?.account"
+            (courseClicked)="navigateToCourse($event)"></app-course-pager>
+
+        @if (courses().length === 0) {
+        <p>No course is assigned to you</p>
+        }
+
+    </section>
+</div>
+} @else {
+<div class="skeleton-block">
+    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quasi doloremque ipsa quae nemo, perferendis architecto
+    vero libero quaerat tenetur fuga rem at aperiam, in odio doloribus minus dolorum, placeat id.
+    Illum veritatis omnis delectus quia optio pariatur, aut nemo, cumque, totam voluptate soluta deserunt obcaecati
+    itaque magnam distinctio. Repellendus voluptatem perspiciatis cupiditate nostrum nihil debitis aliquam quas corrupti
+    ex ratione!
+</div>
+}
