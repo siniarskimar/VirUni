@@ -25,7 +25,7 @@ public class SpringBootApplication {
 	@Bean
 	public CommandLineRunner startup() {
 		return args -> {
-			if(accountRepository.countByRole(AccountRole.ADMIN) == 0) {
+			if (accountRepository.countByRole(AccountRole.ADMIN) == 0) {
 				accountRepository.save(
 						new Account(
 								"admin",

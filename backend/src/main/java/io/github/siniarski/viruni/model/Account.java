@@ -17,7 +17,7 @@ public class Account {
     private long id;
 
     @NotBlank
-    @Size(min=USERNAME_LEN_MIN, max=USERNAME_LEN_MAX)
+    @Size(min = USERNAME_LEN_MIN, max = USERNAME_LEN_MAX)
     @Column(nullable = false, unique = true)
     private String username;
 
@@ -27,11 +27,11 @@ public class Account {
     private String password;
 
     @NotBlank
-    @Size(min=1, max=50)
+    @Size(min = 1, max = 50)
     private String firstname;
 
     @NotBlank
-    @Size(min=1, max=50)
+    @Size(min = 1, max = 50)
     private String lastname;
 
     @JsonIgnore
@@ -51,13 +51,14 @@ public class Account {
     @OneToMany(mappedBy = "teacher", fetch = FetchType.LAZY)
     private List<Grade> assignedGrades;
 
-    protected Account() {}
+    protected Account() {
+    }
 
     public Account(String username,
-                   String password,
-                   String firstname,
-                   String lastname,
-                   AccountRole role) {
+            String password,
+            String firstname,
+            String lastname,
+            AccountRole role) {
         setId(0);
         setFirstname(firstname);
         setLastname(lastname);
@@ -143,7 +144,8 @@ public class Account {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Account account)) return false;
+        if (!(o instanceof Account account))
+            return false;
         return id == account.id && Objects.equals(username, account.username);
     }
 

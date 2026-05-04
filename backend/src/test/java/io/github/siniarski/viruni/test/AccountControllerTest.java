@@ -1,0 +1,97 @@
+package io.github.siniarski.viruni.test;
+
+import static io.restassured.RestAssured.*;
+import static org.hamcrest.Matchers.*;
+
+import java.util.List;
+
+import io.github.siniarski.viruni.dto.JwtResponse;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import io.github.siniarski.viruni.dto.SignInForm;
+import io.github.siniarski.viruni.model.Account;
+import io.github.siniarski.viruni.model.AccountRole;
+import io.github.siniarski.viruni.repository.AccountRepository;
+import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.filter.log.LogDetail;
+import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import(TestConfiguration.class)
+public class AccountControllerTest {
+
+    @LocalServerPort
+    private Integer serverPort;
+
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @BeforeEach
+    void beforeEach() {
+        RestAssured.baseURI = "http://localhost:" + serverPort;
+        accountRepository.deleteAll();
+    }
+
+    void insertMockAccounts() {
+        List<Account> mockAccounts = List.of(
+                new Account(
+                        "aliciaprice", passwordEncoder.encode("magics"),
+                        "Alicia", "Price", AccountRole.USER),
+                new Account(
+                        "ramirezangela", passwordEncoder.encode("magics"),
+                        "Angela", "Ramirez", AccountRole.USER),
+                new Account(
+                        "charlesangelica", passwordEncoder.encode("secret"),
+                        "Angelica", "Charles", AccountRole.TEACHER));
+
+        accountRepository.saveAll(mockAccounts);
+    }
+
+    JwtResponse authorizeAs(SignInForm form) {
+        var resp = given()
+                .contentType(ContentType.JSON)
+                .body(form)
+                .post("/signin");
+
+        resp.then().statusCode(200);
+
+        return resp.as(JwtResponse.class);
+    }
+
+    RequestSpecification getRequestSpecification(JwtResponse auth) {
+        RequestSpecBuilder builder = new RequestSpecBuilder();
+        builder.addHeader("Authorization", "Bearer " + auth.getToken());
+        return builder.build();
+    }
+
+    @Test
+    public void shouldGetAccount() {
+        insertMockAccounts();
+        var authorization = authorizeAs(new SignInForm("aliciaprice", "magics"));
+        var requestSpec = getRequestSpecification(authorization);
+
+        given()
+                .spec(requestSpec)
+                .contentType(ContentType.JSON)
+                .when()
+                .log().ifValidationFails(LogDetail.ALL)
+                .get("/account/" + authorization.getAccountId())
+                .then()
+                .log().ifValidationFails(LogDetail.BODY)
+                .statusCode(200)
+                .body("id", equalTo((int) authorization.getAccountId()))
+                .body("firstname", equalTo("Alicia"))
+                .body("lastname", equalTo("Price"));
+    }
+}
