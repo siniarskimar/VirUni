@@ -17,17 +17,17 @@ public class PermissionEvaluator implements org.springframework.security.access.
     public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
         if(!(permission instanceof Authority perm)) return false;
 
-        if(targetDomainObject instanceof Account a)
+        if(targetDomainObject instanceof AccountPermission a)
             return hasPermission(authentication, a, perm);
 
         return false;
     }
 
-    public boolean hasPermission(Authentication authentication, Account targetDomainObject, Authority permission) {
+    public boolean hasPermission(Authentication authentication, Account targetDomainObject, AccountPermission permission) {
         return accountPermissionService.hasPermission(authentication, targetDomainObject, permission);
     }
 
-    public boolean hasPermission(Account targetDomainObject, Authority permission) {
+    public boolean hasPermission(Account targetDomainObject, Object permission) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         return hasPermission(auth, targetDomainObject, permission);
     }

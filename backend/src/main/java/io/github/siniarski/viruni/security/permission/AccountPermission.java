@@ -14,5 +14,10 @@ public enum AccountPermission {
     /**
      * Allows to edit account details
      */
-    EDIT;
+    EDIT,
+
+    /**
+     * Allows to edit credential details
+     */
+    EDIT_CREDENTIALS;
 }

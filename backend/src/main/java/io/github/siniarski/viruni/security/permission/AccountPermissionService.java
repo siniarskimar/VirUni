@@ -20,29 +20,30 @@ public class AccountPermissionService {
     @Autowired
     private RoleHierarchyService roleHierarchyService;
 
-    public Set<Authority> getPermissions(Authentication authentication, Account account) {
+    public Set<AccountPermission> getPermissions(Authentication authentication, Account account) {
         AccountPrinciple principal = (AccountPrinciple) authentication.getPrincipal();
-        Set<Authority> permissions = new HashSet<>();
+        Set<AccountPermission> permissions = new HashSet<>();
 
-        permissions.add(Authority.ACCOUNT_VIEW);
+        // FEAT: Hidden accounts?
+        permissions.add(AccountPermission.VIEW);
 
         if(principal.getId() == account.getId() || roleHierarchyService.hasRoleImplied(AccountRole.ADMIN, authentication)) {
             permissions.addAll(List.of(
-                    Authority.ACCOUNT_DELETE,
-                    Authority.ACCOUNT_UPDATE,
-                    Authority.ACCOUNT_UPDATE_CREDENTIALS
+                    AccountPermission.DELETE,
+                    AccountPermission.EDIT,
+                    AccountPermission.EDIT_CREDENTIALS
             ));
         }
 
         return permissions;
     }
 
-    public Set<Authority> getPermissions(Account account) {
+    public Set<AccountPermission> getPermissions(Account account) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         return getPermissions(auth, account);
     }
 
-    public boolean hasPermission(Authentication authentication, Account account, Authority permission) {
+    public boolean hasPermission(Authentication authentication, Account account, AccountPermission permission) {
         return getPermissions(authentication, account).contains(permission);
     }
 }
