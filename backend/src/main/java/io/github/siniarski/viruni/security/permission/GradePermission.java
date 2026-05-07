@@ -1,6 +1,6 @@
 package io.github.siniarski.viruni.security.permission;
 
-public enum GradePermissions {
+public enum GradePermission {
 
     /**
      * Allows to update grade details (value, title & description)

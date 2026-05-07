@@ -1,6 +1,6 @@
 package io.github.siniarski.viruni.security.permission;
 
-public enum AccountPermissions {
+public enum AccountPermission {
     /**
      * Allows to browse account details
      */

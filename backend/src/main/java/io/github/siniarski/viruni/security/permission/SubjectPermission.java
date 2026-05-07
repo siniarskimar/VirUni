@@ -1,6 +1,6 @@
 package io.github.siniarski.viruni.security.permission;
 
-public enum SubjectPermissions {
+public enum SubjectPermission {
     /**
      * Allows to view subject's contents
      */
