@@ -3,6 +3,7 @@ package io.github.siniarski.viruni.test.security;
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.repository.AccountRepository;
+import io.github.siniarski.viruni.security.permission.AccountPermission;
 import io.github.siniarski.viruni.security.permission.AccountPermissionService;
 import io.github.siniarski.viruni.security.Authority;
 import io.github.siniarski.viruni.test.TestConfig;
@@ -106,17 +107,17 @@ public class AccountPermissionServiceTest {
 
         assertThat(service.getPermissions(auth, acc))
                 .isEqualTo(new HashSet<>(List.of(
-                        Authority.ACCOUNT_VIEW,
-                        Authority.ACCOUNT_DELETE,
-                        Authority.ACCOUNT_UPDATE,
-                        Authority.ACCOUNT_UPDATE_CREDENTIALS
+                        AccountPermission.VIEW,
+                        AccountPermission.DELETE,
+                        AccountPermission.EDIT,
+                        AccountPermission.EDIT_CREDENTIALS
                 )));
 
-        assertTrue(service.hasPermission(auth, acc, Authority.ACCOUNT_VIEW));
-        assertTrue(service.hasPermission(auth, acc, Authority.ACCOUNT_DELETE));
+        assertTrue(service.hasPermission(auth, acc, AccountPermission.VIEW));
+        assertTrue(service.hasPermission(auth, acc, AccountPermission.DELETE));
 
-        assertTrue(service.hasPermission(auth, acc, Authority.ACCOUNT_UPDATE));
-        assertTrue(service.hasPermission(auth, acc, Authority.ACCOUNT_UPDATE_CREDENTIALS));
+        assertTrue(service.hasPermission(auth, acc, AccountPermission.EDIT));
+        assertTrue(service.hasPermission(auth, acc, AccountPermission.EDIT_CREDENTIALS));
     }
 
     @ParameterizedTest
@@ -127,14 +128,14 @@ public class AccountPermissionServiceTest {
 
         assertThat(service.getPermissions(auth, acc))
                 .isEqualTo(new HashSet<>(List.of(
-                        Authority.ACCOUNT_VIEW
+                        AccountPermission.VIEW
                 )));
 
-        assertTrue(service.hasPermission(auth, acc, Authority.ACCOUNT_VIEW));
-        assertFalse(service.hasPermission(auth, acc, Authority.ACCOUNT_DELETE));
+        assertTrue(service.hasPermission(auth, acc, AccountPermission.VIEW));
+        assertFalse(service.hasPermission(auth, acc, AccountPermission.DELETE));
 
-        assertFalse(service.hasPermission(auth, acc, Authority.ACCOUNT_UPDATE));
-        assertFalse(service.hasPermission(auth, acc, Authority.ACCOUNT_UPDATE_CREDENTIALS));
+        assertFalse(service.hasPermission(auth, acc, AccountPermission.EDIT));
+        assertFalse(service.hasPermission(auth, acc, AccountPermission.EDIT_CREDENTIALS));
     }
 
     @ParameterizedTest
@@ -145,16 +146,16 @@ public class AccountPermissionServiceTest {
 
         assertThat(service.getPermissions(auth, acc))
                 .isEqualTo(new HashSet<>(List.of(
-                        Authority.ACCOUNT_VIEW,
-                        Authority.ACCOUNT_DELETE,
-                        Authority.ACCOUNT_UPDATE,
-                        Authority.ACCOUNT_UPDATE_CREDENTIALS
+                        AccountPermission.VIEW,
+                        AccountPermission.DELETE,
+                        AccountPermission.EDIT,
+                        AccountPermission.EDIT_CREDENTIALS
                 )));
 
-        assertTrue(service.hasPermission(auth, acc, Authority.ACCOUNT_VIEW));
-        assertTrue(service.hasPermission(auth, acc, Authority.ACCOUNT_DELETE));
+        assertTrue(service.hasPermission(auth, acc, AccountPermission.VIEW));
+        assertTrue(service.hasPermission(auth, acc, AccountPermission.DELETE));
 
-        assertTrue(service.hasPermission(auth, acc, Authority.ACCOUNT_UPDATE));
-        assertTrue(service.hasPermission(auth, acc, Authority.ACCOUNT_UPDATE_CREDENTIALS));
+        assertTrue(service.hasPermission(auth, acc, AccountPermission.EDIT));
+        assertTrue(service.hasPermission(auth, acc, AccountPermission.EDIT_CREDENTIALS));
     }
 }
