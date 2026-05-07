@@ -1,7 +1,8 @@
-package io.github.siniarski.viruni.security;
+package io.github.siniarski.viruni.security.permission;
 
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
+import io.github.siniarski.viruni.security.Authority;
 import io.github.siniarski.viruni.security.auth.AccountPrinciple;
 import io.github.siniarski.viruni.service.RoleHierarchyService;
 import org.springframework.beans.factory.annotation.Autowired;

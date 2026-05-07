@@ -3,6 +3,7 @@ package io.github.siniarski.viruni.security;
 import io.github.siniarski.viruni.security.auth.AccountDetailsServiceImpl;
 import io.github.siniarski.viruni.security.jwt.JwtAuthEntryPoint;
 import io.github.siniarski.viruni.security.jwt.JwtAuthTokenFilter;
+import io.github.siniarski.viruni.security.permission.PermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

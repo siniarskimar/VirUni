@@ -1,6 +1,6 @@
 package io.github.siniarski.viruni.test;
 
-import io.github.siniarski.viruni.security.AccountPermissionService;
+import io.github.siniarski.viruni.security.permission.AccountPermissionService;
 import io.github.siniarski.viruni.security.auth.AccountDetailsServiceImpl;
 import io.github.siniarski.viruni.service.RoleHierarchyService;
 import org.springframework.boot.test.context.TestConfiguration;
