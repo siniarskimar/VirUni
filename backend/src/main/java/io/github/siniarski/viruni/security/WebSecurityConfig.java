@@ -104,7 +104,7 @@ public class WebSecurityConfig {
     static MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
         DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
         expressionHandler.setRoleHierarchy(roleHierarchy);
+        expressionHandler.setPermissionEvaluator(new PermissionEvaluator());
         return expressionHandler;
     }
-
 }
