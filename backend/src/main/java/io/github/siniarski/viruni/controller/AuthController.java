@@ -8,9 +8,7 @@ import io.github.siniarski.viruni.dto.request.SignInRequest;
 import io.github.siniarski.viruni.dto.request.SignUpRequest;
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
-import io.github.siniarski.viruni.model.TeacherRegistrationToken;
 import io.github.siniarski.viruni.repository.AccountRepository;
-import io.github.siniarski.viruni.repository.TeacherRegistrationTokenRegistry;
 import io.github.siniarski.viruni.security.jwt.JwtDetails;
 import io.github.siniarski.viruni.security.jwt.JwtProvider;
 
@@ -35,19 +33,16 @@ public class AuthController {
     private final DaoAuthenticationProvider daoAuthenticationProvider;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
-    private final TeacherRegistrationTokenRegistry teacherRegistrationTokenRegistry;
 
     @Autowired
     public AuthController(AccountRepository accountRepository,
                           DaoAuthenticationProvider daoAuthenticationProvider,
                           PasswordEncoder passwordEncoder,
-                          JwtProvider jwtProvider,
-                          TeacherRegistrationTokenRegistry teacherRegistrationTokenRegistry) {
+                          JwtProvider jwtProvider) {
         this.accountRepository = accountRepository;
         this.daoAuthenticationProvider = daoAuthenticationProvider;
         this.passwordEncoder = passwordEncoder;
         this.jwtProvider = jwtProvider;
-        this.teacherRegistrationTokenRegistry = teacherRegistrationTokenRegistry;
     }
 
     @PostMapping("/signin")
@@ -72,31 +67,13 @@ public class AuthController {
             return RestResponse.conflict("Username already taken");
         }
 
-        AccountRole role = signupRequest.getRole();
-        if(role.equals(AccountRole.TEACHER)) {
-            String tokenGiven = signupRequest.getTeacherRegistrationToken();
-            if(tokenGiven == null) return RestResponse.badRequest("missing teacher registration token");
-
-            TeacherRegistrationToken token = teacherRegistrationTokenRegistry.findByToken(tokenGiven).orElse(null);
-            if(token == null) return RestResponse.badRequest("invalid teacher registration token");
-
-            if(Instant.now().isAfter(token.getExpires())) {
-                teacherRegistrationTokenRegistry.delete(token);
-                return RestResponse.badRequest("token expired");
-            }
-
-            if(!token.isReusable()) {
-                teacherRegistrationTokenRegistry.delete(token);
-            }
-        }
-
         String encodedPassword = passwordEncoder.encode(signupRequest.getPassword());
         Account account = new Account(
                                     signupRequest.getUsername(),
                                     encodedPassword,
                                     signupRequest.getFirstname(),
                                     signupRequest.getLastname(),
-                                    role);
+                                    signupRequest.getRole());
 
         accountRepository.save(account);
 
