@@ -1,6 +1,7 @@
 package io.github.siniarski.viruni.controller;
 
 import io.github.siniarski.viruni.RestResponse;
+import io.github.siniarski.viruni.dto.response.AccountResponse;
 import io.github.siniarski.viruni.dto.response.PagedResponse;
 import io.github.siniarski.viruni.dto.request.UpdateAccountRequest;
 import io.github.siniarski.viruni.model.Account;
@@ -8,6 +9,10 @@ import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.model.Grade;
 import io.github.siniarski.viruni.repository.AccountRepository;
 import io.github.siniarski.viruni.repository.AccountSpecification;
+import io.github.siniarski.viruni.security.AccountPermissionService;
+import io.github.siniarski.viruni.security.Authority;
+import io.github.siniarski.viruni.security.PermissionEvaluator;
+import io.github.siniarski.viruni.security.auth.AccountPrinciple;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -20,19 +25,26 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 @RestController
 @RequestMapping("/account")
 public class AccountController {
     private final AccountRepository accountRepository;
+    private final PermissionEvaluator permissionEvaluator;
+    private final AccountPermissionService accountPermissionService;
 
     @Autowired
-    public AccountController(AccountRepository accountRepository) {
+    public AccountController(AccountRepository accountRepository,
+                             PermissionEvaluator permissionEvaluator,
+                             AccountPermissionService accountPermissionService) {
         this.accountRepository = accountRepository;
+        this.permissionEvaluator = permissionEvaluator;
+        this.accountPermissionService = accountPermissionService;
     }
 
     @GetMapping
-    public PagedResponse<Account> getMany(@PageableDefault Pageable pageable,
+    public PagedResponse<AccountResponse> getMany(@PageableDefault Pageable pageable,
                                           @RequestParam(required = false) AccountRole role,
                                           @RequestParam(required = false) String query,
                                           @RequestParam(required = false) Long subjectId) {
@@ -47,33 +59,42 @@ public class AccountController {
         }
         if(subjectId != null) specs.add(AccountSpecification.isParticipantOf(subjectId));
 
-        if(specs.isEmpty()) return new PagedResponse<>(this.accountRepository.findAll(pageable));
-        return new PagedResponse<>(this.accountRepository.findAll(Specification.allOf(specs), pageable));
+        Function<Account, AccountResponse> mapper = acc -> new AccountResponse(
+                acc.getId(),
+                acc.getUsername(),
+                acc.getFirstname(),
+                acc.getLastname(),
+                null
+        );
+
+        if(specs.isEmpty())
+            return new PagedResponse<>(this.accountRepository.findAll(pageable).map(mapper));
+
+        return new PagedResponse<>(this.accountRepository.findAll(Specification.allOf(specs), pageable).map(mapper));
     }
 
     @GetMapping("/{identifier}")
-    public ResponseEntity<Account> getOne(@PathVariable String identifier) {
-        Account account = null;
-
-
-        try {
-            if(identifier.matches("\\d+")) {
-                long id = Long.parseLong(identifier);
-                account = accountRepository.findById(id).orElse(null);
-            }
-        } catch (NumberFormatException ignored) {
-
-        } finally {
-            if(account == null) account = accountRepository.findByUsername(identifier).orElse(null);
-        }
-
+    public ResponseEntity<?> getOne(@PathVariable long identifier) {
+        Account account = accountRepository.findById(identifier).orElse(null);
         if(account == null) return RestResponse.notFound();
+        if(!permissionEvaluator.hasPermission(account, Authority.ACCOUNT_VIEW))
+            return RestResponse.forbidden("you don't have permission to view this account");
 
-        return RestResponse.ok(account);
+        return RestResponse.ok(new AccountResponse(
+                account.getId(),
+                account.getUsername(),
+                account.getFirstname(),
+                account.getLastname(),
+                accountPermissionService.getPermissions(account)
+        ));
     }
 
-    private ResponseEntity<?> delete(Account account) {
+    private ResponseEntity<?> delete(Authentication auth, Account account) {
         if (account == null) return RestResponse.notFound();
+
+        if(!permissionEvaluator.hasPermission(auth, account, Authority.ACCOUNT_DELETE))
+            return RestResponse.forbidden("you don't have permission to delete this account");
+
         if (account.getRole().equals(AccountRole.ADMIN) && accountRepository.countByRole(AccountRole.ADMIN) == 1)
             return RestResponse.forbidden("cannot delete a single left admin");
 
@@ -82,27 +103,24 @@ public class AccountController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteById(@PathVariable long id) {
-        return delete(accountRepository.findById(id).orElse(null));
-    }
-
-    @DeleteMapping
-    public ResponseEntity<?> deleteSelf(Authentication auth) {
-        return delete(accountRepository.findByUsername(auth.getName()).orElse(null));
+    public ResponseEntity<?> deleteById(Authentication auth, @PathVariable long id) {
+        return delete(auth, accountRepository.findById(id).orElse(null));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Object> updateOne(@PathVariable long id, @Valid @RequestBody UpdateAccountRequest form) {
+    public ResponseEntity<?> updateOne(@PathVariable long id,
+                                            @Valid @RequestBody UpdateAccountRequest reqBody) {
         Account account = accountRepository.findById(id).orElse(null);
         if(account == null) return RestResponse.notFound();
+        if(!permissionEvaluator.hasPermission(account, Authority.ACCOUNT_UPDATE))
+            return RestResponse.forbidden("you are not permitted to update information on this account");
 
-        if(form.getFirstname() != null) {
-            account.setFirstname(form.getFirstname());
+        if(reqBody.getFirstname() != null) {
+            account.setFirstname(reqBody.getFirstname());
         }
 
-        if(form.getLastname() != null) {
-            account.setLastname(form.getLastname());
+        if(reqBody.getLastname() != null) {
+            account.setLastname(reqBody.getLastname());
         }
 
         accountRepository.save(account);

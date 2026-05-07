@@ -70,6 +70,23 @@ public class Account {
         this.assignedGrades = new ArrayList<>();
     }
 
+    public Account(long id,
+                   String username,
+                   String password,
+                   String firstname,
+                   String lastname,
+                   AccountRole role) {
+        setId(id);
+        setFirstname(firstname);
+        setLastname(lastname);
+        setUsername(username);
+        setPassword(password);
+        setRole(role);
+        this.subjects = new HashSet<>();
+        this.receivedGrades = new ArrayList<>();
+        this.assignedGrades = new ArrayList<>();
+    }
+
     public long getId() {
         return id;
     }
