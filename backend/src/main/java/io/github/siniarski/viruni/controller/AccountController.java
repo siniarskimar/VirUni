@@ -67,7 +67,7 @@ public class AccountController {
                 acc.getUsername(),
                 acc.getFirstname(),
                 acc.getLastname(),
-                null
+                accountPermissionService.getPermissions(acc)
         );
 
         if(specs.isEmpty())
@@ -137,7 +137,13 @@ public class AccountController {
         }
 
         accountRepository.save(account);
-        return RestResponse.ok(account);
+        return RestResponse.ok(new AccountResponse(
+                account.getId(),
+                account.getUsername(),
+                account.getFirstname(),
+                account.getLastname(),
+                accountPermissionService.getPermissions(account)
+        ));
     }
 
     @GetMapping("/{id}/grade")
