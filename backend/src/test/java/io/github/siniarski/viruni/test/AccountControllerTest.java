@@ -25,7 +25,7 @@ import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(TestConfiguration.class)
+@Import(ContainerizedConfiguration.class)
 public class AccountControllerTest {
 
     @LocalServerPort

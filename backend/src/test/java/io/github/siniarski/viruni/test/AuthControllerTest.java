@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(TestConfiguration.class)
+@Import(ContainerizedConfiguration.class)
 public class AuthControllerTest {
 
     @LocalServerPort
