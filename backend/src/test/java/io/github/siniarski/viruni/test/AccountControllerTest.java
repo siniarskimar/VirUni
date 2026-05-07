@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.HashSet;
 import java.util.List;
 
+import io.github.siniarski.viruni.dto.request.UpdateAccountRequest;
 import io.github.siniarski.viruni.dto.response.AccountResponse;
 import io.github.siniarski.viruni.dto.response.SignInResponse;
 import io.github.siniarski.viruni.security.Authority;
@@ -108,5 +109,42 @@ public class AccountControllerTest {
                                 AccountPermission.EDIT_CREDENTIALS
                         ))
                 ));
+    }
+
+    @Test
+    public void shouldUpdatePassword(){
+        insertMockAccounts();
+        var originalSignIn = new SignInRequest("ramirezangela", "magics");
+        var auth = authorizeAs(originalSignIn);
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(new UpdateAccountRequest(null, null, "supersecret123"))
+                .patch("/account/"+auth.getAccountId())
+                .then()
+                .log().ifValidationFails(LogDetail.BODY)
+                .statusCode(200);
+
+        // Make sure other fields stayed unchanged
+        var accountResp = given()
+                .get("/account"+auth.getAccountId())
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(AccountResponse.class);
+
+        assertThat(accountResp.getFirstname()).isEqualTo("Angela");
+        assertThat(accountResp.getLastname()).isEqualTo("Ramirez");
+
+        RestAssured.requestSpecification = null;
+
+        // Check that password has actually been changed
+        given()
+                .contentType(ContentType.JSON)
+                .body(originalSignIn)
+                .post("/signin")
+                .then()
+                .log().ifValidationFails(LogDetail.BODY)
+                .statusCode(401);
     }
 }
