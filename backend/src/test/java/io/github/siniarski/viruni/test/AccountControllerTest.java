@@ -1,11 +1,14 @@
 package io.github.siniarski.viruni.test;
 
-import static io.restassured.RestAssured.*;
-import static org.hamcrest.Matchers.*;
+import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.HashSet;
 import java.util.List;
 
+import io.github.siniarski.viruni.dto.response.AccountResponse;
 import io.github.siniarski.viruni.dto.response.SignInResponse;
+import io.github.siniarski.viruni.security.Authority;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,20 +79,33 @@ public class AccountControllerTest {
 
 
     @Test
-    public void shouldGetAccount() {
+    public void shouldGetAccount_self() {
         insertMockAccounts();
         var authorization = authorizeAs(new SignInRequest("aliciaprice", "magics"));
 
-        given()
+        var resp = given()
                 .contentType(ContentType.JSON)
                 .when()
                 .log().ifValidationFails(LogDetail.ALL)
-                .get("/account/" + authorization.getAccountId())
+                .get("/account/me")
                 .then()
                 .log().ifValidationFails(LogDetail.BODY)
                 .statusCode(200)
-                .body("id", equalTo((int) authorization.getAccountId()))
-                .body("firstname", equalTo("Alicia"))
-                .body("lastname", equalTo("Price"));
+                .extract()
+                .as(AccountResponse.class);
+
+        assertThat(resp).usingRecursiveComparison()
+                .isEqualTo(new AccountResponse(
+                        authorization.getAccountId(),
+                        "aliciaprice",
+                        "Alicia",
+                        "Price",
+                        new HashSet<>(List.of(
+                                Authority.ACCOUNT_DELETE,
+                                Authority.ACCOUNT_VIEW,
+                                Authority.ACCOUNT_UPDATE,
+                                Authority.ACCOUNT_UPDATE_CREDENTIALS
+                        ))
+                ));
     }
 }
