@@ -15,9 +15,8 @@ public class PermissionEvaluator implements org.springframework.security.access.
 
     @Override
     public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
-        if(!(permission instanceof Authority perm)) return false;
 
-        if(targetDomainObject instanceof AccountPermission a)
+        if(targetDomainObject instanceof Account a && permission instanceof AccountPermission perm)
             return hasPermission(authentication, a, perm);
 
         return false;

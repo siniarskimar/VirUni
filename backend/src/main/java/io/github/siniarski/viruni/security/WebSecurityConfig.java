@@ -102,10 +102,20 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    static MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
+    static MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy, PermissionEvaluator permissionEvaluator) {
         DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
         expressionHandler.setRoleHierarchy(roleHierarchy);
-        expressionHandler.setPermissionEvaluator(new PermissionEvaluator());
+        expressionHandler.setPermissionEvaluator(permissionEvaluator);
         return expressionHandler;
+    }
+
+    @Bean
+    static org.springframework.security.access.PermissionEvaluator permissionEvaluator() {
+        return new PermissionEvaluator();
+    }
+
+    @Bean
+    static PermissionEvaluator permissionEvaluatorImpl() {
+        return new PermissionEvaluator();
     }
 }
