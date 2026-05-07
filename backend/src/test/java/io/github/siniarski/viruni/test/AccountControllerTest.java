@@ -22,7 +22,6 @@ import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(ContainerizedConfiguration.class)
@@ -39,6 +38,7 @@ public class AccountControllerTest {
 
     @BeforeEach
     void beforeEach() {
+        RestAssured.requestSpecification = null;
         RestAssured.baseURI = "http://localhost:" + serverPort;
         accountRepository.deleteAll();
     }
@@ -65,24 +65,22 @@ public class AccountControllerTest {
                 .post("/signin");
 
         resp.then().statusCode(200);
+        var body = resp.as(SignInResponse.class);
 
-        return resp.as(SignInResponse.class);
+        RestAssured.requestSpecification = new RequestSpecBuilder()
+                .addHeader("Authorization", "Bearer " + body.getToken())
+                .build();
+
+        return body;
     }
 
-    RequestSpecification getRequestSpecification(SignInResponse auth) {
-        RequestSpecBuilder builder = new RequestSpecBuilder();
-        builder.addHeader("Authorization", "Bearer " + auth.getToken());
-        return builder.build();
-    }
 
     @Test
     public void shouldGetAccount() {
         insertMockAccounts();
         var authorization = authorizeAs(new SignInRequest("aliciaprice", "magics"));
-        var requestSpec = getRequestSpecification(authorization);
 
         given()
-                .spec(requestSpec)
                 .contentType(ContentType.JSON)
                 .when()
                 .log().ifValidationFails(LogDetail.ALL)
