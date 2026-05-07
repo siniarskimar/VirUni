@@ -121,19 +121,19 @@ public class AccountController {
             return RestResponse.forbidden("you are not permitted to update information on this account");
 
         var canEditCredentials = permissionEvaluator.hasPermission(account, AccountPermission.EDIT_CREDENTIALS);
-        if(reqBody.getPassword() != null && !canEditCredentials)
+        if(reqBody.password() != null && !canEditCredentials)
             return RestResponse.forbidden("you are not permitted to update credential information on this account");
 
-        if(reqBody.getFirstname() != null) {
-            account.setFirstname(reqBody.getFirstname());
+        if(reqBody.firstname() != null) {
+            account.setFirstname(reqBody.firstname());
         }
 
-        if(reqBody.getLastname() != null) {
-            account.setLastname(reqBody.getLastname());
+        if(reqBody.lastname() != null) {
+            account.setLastname(reqBody.lastname());
         }
 
-        if(reqBody.getPassword() != null) {
-            account.setPassword(passwordEncoder.encode(reqBody.getPassword()));
+        if(reqBody.password() != null) {
+            account.setPassword(passwordEncoder.encode(reqBody.password()));
         }
 
         accountRepository.save(account);
