@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-public class AccountPermissionService {
+public class AccountPermissionService extends PermissionService<Account, AccountPermission> {
 
     @Autowired
     private RoleHierarchyService roleHierarchyService;
@@ -36,14 +36,5 @@ public class AccountPermissionService {
         }
 
         return permissions;
-    }
-
-    public Set<AccountPermission> getPermissions(Account account) {
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        return getPermissions(auth, account);
-    }
-
-    public boolean hasPermission(Authentication authentication, Account account, AccountPermission permission) {
-        return getPermissions(authentication, account).contains(permission);
     }
 }
