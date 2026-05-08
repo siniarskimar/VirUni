@@ -44,6 +44,22 @@ public class Subject {
         setLeadingTeacher(teacher);
     }
 
+    public Subject(long id,
+                   String name,
+                   Account leadingTeacher,
+                   String description,
+                   Instant createdAt,
+                   Set<Account> participants,
+                   List<Grade> grades) {
+        this.id = id;
+        this.name = name;
+        this.leadingTeacher = leadingTeacher;
+        this.description = description;
+        this.createdAt = createdAt;
+        this.participants = participants;
+        this.grades = grades;
+    }
+
     public long getId() {
         return id;
     }
