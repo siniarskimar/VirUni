@@ -68,6 +68,10 @@ public class RestResponse {
         return new ResponseEntity<>(new ErrorResponse(message), HttpStatus.BAD_REQUEST);
     }
 
+    public static ResponseEntity<ErrorResponse> badRequest(String message, Object detail) {
+        return new ResponseEntity<>(new ErrorResponse(message, detail), HttpStatus.BAD_REQUEST);
+    }
+
     public static ResponseEntity<Map<String, Object>> validationError(List<ValidationError> errors) {
         Map<String, Object> body = new HashMap<>();
         body.put("message", "Form validation failed");
