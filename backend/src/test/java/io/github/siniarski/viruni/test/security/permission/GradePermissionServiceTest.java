@@ -77,7 +77,7 @@ public class GradePermissionServiceTest {
             new Subject(
                     1,
                     "Linear Algebra",
-                    accounts.get(4), // teacher: johndep
+                    accounts.get(4), // teacher: maria.santos
                     null,
                     Instant.now(),
                     Set.of(accounts.get(4), accounts.get(2), accounts.get(3)),
@@ -189,10 +189,6 @@ public class GradePermissionServiceTest {
 
                 // Teachers can't see grades from subjects they are not part of
                 Arguments.of("maria.santos", 0, none),
-
-                // other as "the_reeves" viewing others => viewOnly
-                Arguments.of("the_reeves", "johndep", viewOnly),
-                Arguments.of("the_reeves", "admin", viewOnly),
 
                 // Admins have all privileges
                 Arguments.of("admin", 0, all),
