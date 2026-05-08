@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -110,7 +111,7 @@ public class AccountPermissionServiceTest {
 
 
     @ParameterizedTest
-    @CsvSource({"the_reeves", "johndep", "admin"})
+    @ValueSource(strings = {"the_reeves", "johndep", "admin"})
     public void testPermissions_self(String username) {
         var auth = authenticateAs(username);
         var acc = accountRepository.findByUsername(username).orElseThrow();
@@ -131,7 +132,7 @@ public class AccountPermissionServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"johndep", "admin"})
+    @ValueSource(strings = {"johndep", "admin"})
     public void testPermissions_other(String otherUsername) {
         var auth = authenticateAs("the_reeves");
         var acc = accountRepository.findByUsername(otherUsername).orElseThrow();
@@ -149,7 +150,7 @@ public class AccountPermissionServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"the_reeves", "johndep"})
+    @ValueSource(strings = {"the_reeves", "johndep"})
     public void testPermissions_admin(String otherUsername) {
         var auth = authenticateAs("admin");
         var acc = accountRepository.findByUsername(otherUsername).orElseThrow();
