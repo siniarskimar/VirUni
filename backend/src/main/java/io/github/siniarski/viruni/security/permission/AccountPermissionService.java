@@ -25,6 +25,8 @@ public class AccountPermissionService extends PermissionService<Account, Account
     }
 
     public Set<AccountPermission> getPermissions(Authentication authentication, Account account) {
+        if(authentication == null) return Set.of();
+
         AccountPrinciple principal = (AccountPrinciple) authentication.getPrincipal();
         var isAdmin = roleHierarchyService.hasRoleImplied(AccountRole.ADMIN, authentication);
 
