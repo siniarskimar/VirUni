@@ -3,7 +3,10 @@ package io.github.siniarski.viruni.security;
 import io.github.siniarski.viruni.security.auth.AccountDetailsServiceImpl;
 import io.github.siniarski.viruni.security.jwt.JwtAuthEntryPoint;
 import io.github.siniarski.viruni.security.jwt.JwtAuthTokenFilter;
+import io.github.siniarski.viruni.security.permission.AccountPermissionService;
+import io.github.siniarski.viruni.security.permission.GradePermissionService;
 import io.github.siniarski.viruni.security.permission.PermissionEvaluatorImpl;
+import io.github.siniarski.viruni.service.RoleHierarchyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -109,10 +112,6 @@ public class WebSecurityConfig {
         return expressionHandler;
     }
 
-    /// This project mainly uses the implementation directly
-    /// because it contains useful shorthands and utilizes overloads
-    /// when types are known at call site
-    ///
     /// This bean is to ensure compatibility with rest of Spring Boot
     @Bean
     static org.springframework.security.access.PermissionEvaluator permissionEvaluator(
@@ -122,7 +121,19 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    static PermissionEvaluatorImpl permissionEvaluatorImpl() {
-        return new PermissionEvaluatorImpl();
+    static PermissionEvaluatorImpl permissionEvaluatorImpl(AccountPermissionService accountPermissionService,
+                                                           GradePermissionService gradePermissionService) {
+        return new PermissionEvaluatorImpl(accountPermissionService,
+                gradePermissionService);
+    }
+
+    @Bean
+    static AccountPermissionService accountPermissionService(RoleHierarchyService roleHierarchyService) {
+        return new AccountPermissionService(roleHierarchyService);
+    }
+
+    @Bean
+    static GradePermissionService gradePermissionService(RoleHierarchyService roleHierarchyService) {
+        return new GradePermissionService(roleHierarchyService);
     }
 }
