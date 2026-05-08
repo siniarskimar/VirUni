@@ -1,8 +1,5 @@
 package io.github.siniarski.viruni.dto.response;
 
-import io.github.siniarski.viruni.security.SubjectPermissions;
-import io.github.siniarski.viruni.model.Account;
-import io.github.siniarski.viruni.model.Subject;
 import io.github.siniarski.viruni.security.permission.SubjectPermission;
 
 import java.time.Instant;

@@ -11,7 +11,6 @@ import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.model.Subject;
 import io.github.siniarski.viruni.security.permission.SubjectPermission;
 import io.github.siniarski.viruni.security.permission.SubjectPermissionService;
-import io.github.siniarski.viruni.security.SubjectPermissions;
 import io.github.siniarski.viruni.service.RoleHierarchyService;
 import io.github.siniarski.viruni.repository.AccountRepository;
 import io.github.siniarski.viruni.repository.SubjectRepository;

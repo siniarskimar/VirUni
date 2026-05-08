@@ -1,6 +1,5 @@
 package io.github.siniarski.viruni.security.permission;
 
-import io.github.siniarski.viruni.security.SubjectPermissions;
 import io.github.siniarski.viruni.security.auth.AccountPrinciple;
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
@@ -11,7 +10,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class SubjectPermissionService extends PermissionService<Subject, SubjectPermission> {
