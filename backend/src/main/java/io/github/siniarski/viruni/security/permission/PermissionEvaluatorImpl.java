@@ -10,25 +10,21 @@ import java.io.Serializable;
 
 public class PermissionEvaluatorImpl implements PermissionEvaluator {
 
+    private final AccountPermissionService accountPermissionService;
+
     @Autowired
-    private AccountPermissionService accountPermissionService;
+    public PermissionEvaluatorImpl(AccountPermissionService accountPermissionService) {
+        this.accountPermissionService = accountPermissionService;
+    }
+
 
     @Override
     public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
 
         if(targetDomainObject instanceof Account a && permission instanceof AccountPermission perm)
-            return hasPermission(authentication, a, perm);
+            return accountPermissionService.hasPermission(authentication, a, perm);
 
         return false;
-    }
-
-    public boolean hasPermission(Authentication authentication, Account targetDomainObject, AccountPermission permission) {
-        return accountPermissionService.hasPermission(authentication, targetDomainObject, permission);
-    }
-
-    public boolean hasPermission(Account targetDomainObject, Object permission) {
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        return hasPermission(auth, targetDomainObject, permission);
     }
 
     @Override
