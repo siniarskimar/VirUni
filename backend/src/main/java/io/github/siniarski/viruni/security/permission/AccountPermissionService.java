@@ -17,17 +17,22 @@ import java.util.Set;
 @Service
 public class AccountPermissionService extends PermissionService<Account, AccountPermission> {
 
+    private final RoleHierarchyService roleHierarchyService;
+
     @Autowired
-    private RoleHierarchyService roleHierarchyService;
+    public AccountPermissionService(RoleHierarchyService roleHierarchyService) {
+        this.roleHierarchyService = roleHierarchyService;
+    }
 
     public Set<AccountPermission> getPermissions(Authentication authentication, Account account) {
         AccountPrinciple principal = (AccountPrinciple) authentication.getPrincipal();
-        Set<AccountPermission> permissions = new HashSet<>();
+        var isAdmin = roleHierarchyService.hasRoleImplied(AccountRole.ADMIN, authentication);
 
+        Set<AccountPermission> permissions = new HashSet<>();
         // FEAT: Hidden accounts?
         permissions.add(AccountPermission.VIEW);
 
-        if(principal.getId() == account.getId() || roleHierarchyService.hasRoleImplied(AccountRole.ADMIN, authentication)) {
+        if(principal.getId() == account.getId() || isAdmin) {
             permissions.addAll(List.of(
                     AccountPermission.DELETE,
                     AccountPermission.EDIT,

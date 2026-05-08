@@ -1,117 +1,127 @@
-package io.github.siniarski.viruni.test.security;
+package io.github.siniarski.viruni.test.security.permission;
 
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.repository.AccountRepository;
+import io.github.siniarski.viruni.security.auth.AccountDetailsServiceImpl;
+import io.github.siniarski.viruni.security.auth.AccountPrinciple;
 import io.github.siniarski.viruni.security.permission.AccountPermission;
 import io.github.siniarski.viruni.security.permission.AccountPermissionService;
-import io.github.siniarski.viruni.security.Authority;
+import io.github.siniarski.viruni.service.RoleHierarchyService;
 import io.github.siniarski.viruni.test.TestConfig;
+import io.github.siniarski.viruni.test.TestMocks;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentMatchers;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ExtendWith(SpringExtension.class)
-@Import(TestConfig.class)
+@ExtendWith(MockitoExtension.class)
 public class AccountPermissionServiceTest {
-    @Autowired
-    private AccountPermissionService service;
 
-    @Autowired
-    private DaoAuthenticationProvider daoAuthenticationProvider;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private UserDetailsService accountDetailsService;
-
-    @MockitoBean
+    @Mock
     private AccountRepository accountRepository;
 
+    private UserDetailsService userDetailsService;
+    private RoleHierarchy roleHierarchy;
+    private RoleHierarchyService roleHierarchyService;
+    private AccountPermissionService service;
+
+    private static final List<Account> accounts = List.of(
+            new Account(
+                    0,
+                    "admin",
+                    "admin",
+                    "SYSTEM",
+                    "ADMIN",
+                    AccountRole.ADMIN
+            ),
+            new Account(
+                    1,
+                    "johndep",
+                    "arasaka",
+                    "John",
+                    "Depp",
+                    AccountRole.TEACHER
+            ),
+            new Account(
+                    2,
+                    "the_reeves",
+                    "beautiful",
+                    "Keanu",
+                    "Reeves",
+                    AccountRole.USER
+            )
+    );
 
     @BeforeEach
     void beforeEach() {
-        List<Account> mockAccounts = List.of(
-                new Account(
-                        0,
-                        "admin",
-                        passwordEncoder.encode("admin"),
-                        "SYSTEM",
-                        "ADMIN",
-                        AccountRole.ADMIN
-                ),
-                new Account(
-                        1,
-                        "johndep",
-                        passwordEncoder.encode("arasaka"),
-                        "John",
-                        "Depp",
-                        AccountRole.TEACHER
-                ),
-                new Account(
-                        2,
-                        "the_reeves",
-                        passwordEncoder.encode("beautiful"),
-                        "Keanu",
-                        "Reeves",
-                        AccountRole.USER
-                )
-        );
+        TestMocks.stubAccountRepositoryByUsername(accountRepository, accounts);
 
-        for(var acc : mockAccounts) {
-            Mockito.when(accountRepository.findById(acc.getId())).thenReturn(Optional.of(acc));
-            Mockito.when(accountRepository.findByUsername(acc.getUsername())).thenReturn(Optional.of(acc));
-        }
+        roleHierarchy = RoleHierarchyImpl.withDefaultRolePrefix()
+                .role("ADMIN").implies("TEACHER")
+                .role("TEACHER").implies("USER")
+                .build();
 
-        SecurityContextHolder.getContext().setAuthentication(null);
+        userDetailsService = new AccountDetailsServiceImpl(accountRepository, roleHierarchy);
+        roleHierarchyService = new RoleHierarchyService(roleHierarchy, userDetailsService);
+        service = new AccountPermissionService(roleHierarchyService);
     }
 
-    Authentication authenticateAs(String username, String password) {
-        Authentication authentication = daoAuthenticationProvider.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        username,
-                        password
-                )
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        return authentication;
+    @AfterEach
+    void cleanup() {
+        SecurityContextHolder.clearContext();
     }
+
+    Authentication authenticateAs(String username) {
+        var account = accountRepository.findByUsername(username).orElseThrow();
+        var principal = AccountPrinciple.build(account, roleHierarchy);
+        Authentication auth = new TestingAuthenticationToken(principal, null, principal.getAuthorities());
+        return auth;
+    }
+
 
     @ParameterizedTest
-    @CsvSource({"the_reeves,beautiful", "johndep,arasaka", "admin,admin"})
-    public void testPermissions_self(String username, String password) {
-        var auth = authenticateAs(username,password);
+    @CsvSource({"the_reeves", "johndep", "admin"})
+    public void testPermissions_self(String username) {
+        var auth = authenticateAs(username);
         var acc = accountRepository.findByUsername(username).orElseThrow();
 
         assertThat(service.getPermissions(auth, acc))
-                .isEqualTo(new HashSet<>(List.of(
+                .containsExactlyInAnyOrder(
                         AccountPermission.VIEW,
                         AccountPermission.DELETE,
                         AccountPermission.EDIT,
                         AccountPermission.EDIT_CREDENTIALS
-                )));
+                );
 
         assertTrue(service.hasPermission(auth, acc, AccountPermission.VIEW));
         assertTrue(service.hasPermission(auth, acc, AccountPermission.DELETE));
@@ -123,13 +133,13 @@ public class AccountPermissionServiceTest {
     @ParameterizedTest
     @CsvSource({"johndep", "admin"})
     public void testPermissions_other(String otherUsername) {
-        var auth = authenticateAs("the_reeves", "beautiful");
+        var auth = authenticateAs("the_reeves");
         var acc = accountRepository.findByUsername(otherUsername).orElseThrow();
 
         assertThat(service.getPermissions(auth, acc))
-                .isEqualTo(new HashSet<>(List.of(
+                .containsExactlyInAnyOrder(
                         AccountPermission.VIEW
-                )));
+                );
 
         assertTrue(service.hasPermission(auth, acc, AccountPermission.VIEW));
         assertFalse(service.hasPermission(auth, acc, AccountPermission.DELETE));
@@ -141,16 +151,16 @@ public class AccountPermissionServiceTest {
     @ParameterizedTest
     @CsvSource({"the_reeves", "johndep"})
     public void testPermissions_admin(String otherUsername) {
-        var auth = authenticateAs("admin", "admin");
+        var auth = authenticateAs("admin");
         var acc = accountRepository.findByUsername(otherUsername).orElseThrow();
 
         assertThat(service.getPermissions(auth, acc))
-                .isEqualTo(new HashSet<>(List.of(
+                .containsExactlyInAnyOrder(
                         AccountPermission.VIEW,
                         AccountPermission.DELETE,
                         AccountPermission.EDIT,
                         AccountPermission.EDIT_CREDENTIALS
-                )));
+                );
 
         assertTrue(service.hasPermission(auth, acc, AccountPermission.VIEW));
         assertTrue(service.hasPermission(auth, acc, AccountPermission.DELETE));

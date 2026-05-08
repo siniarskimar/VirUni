@@ -9,7 +9,6 @@ import java.util.List;
 import io.github.siniarski.viruni.dto.request.UpdateAccountRequest;
 import io.github.siniarski.viruni.dto.response.AccountResponse;
 import io.github.siniarski.viruni.dto.response.SignInResponse;
-import io.github.siniarski.viruni.security.Authority;
 import io.github.siniarski.viruni.security.permission.AccountPermission;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +62,7 @@ public class AccountControllerTest {
         accountRepository.saveAll(mockAccounts);
     }
 
-    SignInResponse authorizeAs(SignInRequest form) {
+    SignInResponse authenticateAs(SignInRequest form) {
         var resp = given()
                 .contentType(ContentType.JSON)
                 .body(form)
@@ -83,7 +82,7 @@ public class AccountControllerTest {
     @Test
     public void shouldGetAccount_self() {
         insertMockAccounts();
-        var authorization = authorizeAs(new SignInRequest("aliciaprice", "magics"));
+        var authorization = authenticateAs(new SignInRequest("aliciaprice", "magics"));
 
         var resp = given()
                 .contentType(ContentType.JSON)
@@ -115,7 +114,7 @@ public class AccountControllerTest {
     public void shouldUpdatePassword(){
         insertMockAccounts();
         var originalSignIn = new SignInRequest("ramirezangela", "magics");
-        var auth = authorizeAs(originalSignIn);
+        var auth = authenticateAs(originalSignIn);
 
         given()
                 .contentType(ContentType.JSON)

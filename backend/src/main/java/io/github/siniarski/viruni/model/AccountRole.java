@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 
 @Entity
 public class AccountRole {
@@ -42,10 +43,14 @@ public class AccountRole {
     }
 
     public static AccountRole valueOf(String name) {
+        return valueOfOptional(name)
+                .orElseThrow(IllegalArgumentException::new);
+    }
+
+    public static Optional<AccountRole> valueOfOptional(String name) {
         return Arrays.stream(values())
                 .filter(r -> r.getName().equals(name))
-                .findFirst()
-                .orElseThrow(IllegalArgumentException::new);
+                .findFirst();
     }
 
     public static AccountRole valueOf(long id) {

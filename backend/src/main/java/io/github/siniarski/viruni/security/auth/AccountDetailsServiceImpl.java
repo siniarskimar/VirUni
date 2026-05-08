@@ -12,11 +12,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AccountDetailsServiceImpl implements UserDetailsService {
-    @Autowired
-    AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
+    private final RoleHierarchy roleHierarchy;
 
     @Autowired
-    RoleHierarchy roleHierarchy;
+    public AccountDetailsServiceImpl(AccountRepository accountRepository, RoleHierarchy roleHierarchy) {
+        this.accountRepository = accountRepository;
+        this.roleHierarchy = roleHierarchy;
+    }
 
     @Override
     @Transactional
