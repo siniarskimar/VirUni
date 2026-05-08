@@ -51,14 +51,14 @@ public class AccountPrinciple implements UserDetails {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toSet());
 
-        if(reachableRoles.contains(AccountRole.TEACHER.getName())) {
-            authorities.add(Authority.GRADE_MANAGEMENT);
-            authorities.add(Authority.SUBJECT_MANAGEMENT);
+        authorities.add(Authority.TOKEN_RENEW);
+
+        if(reachableRoles.contains(AccountRole.USER.getName())) {
+            authorities.add(Authority.SUBJECTS_READ);
         }
 
         if(reachableRoles.contains(AccountRole.ADMIN.getName())) {
-            authorities.add(Authority.BROWSE_SUBJECTS);
-            authorities.add(Authority.CREATE_TEACHER_TOKEN);
+            authorities.add(Authority.SUBJECT_CREATE);
         }
 
         return new AccountPrinciple(
