@@ -2,7 +2,9 @@ package io.github.siniarski.viruni.test;
 
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
+import io.github.siniarski.viruni.model.Grade;
 import io.github.siniarski.viruni.repository.AccountRepository;
+import io.github.siniarski.viruni.repository.GradeRepository;
 import io.github.siniarski.viruni.service.RoleHierarchyService;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -53,7 +55,24 @@ public final class TestMocks {
                     if(account == null) return Optional.empty();
                     return Optional.of(account);
                 });
+    }
 
+    public static void stubGradeRepositoryById(GradeRepository gradeRepository,
+                                               List<Grade> grades) {
+        Map<Long, Grade> idIndex = grades.stream()
+                .collect(Collectors.toMap(
+                        Grade::getId,
+                        v -> v,
+                        (o, n) -> n
+                ));
+
+        Mockito.when(gradeRepository.findById(ArgumentMatchers.anyLong()))
+                .thenAnswer(inv -> {
+                    Long query = inv.getArgument(0);
+                    Grade grade = idIndex.getOrDefault(query, null);
+                    if(grade == null) return Optional.empty();
+                    return Optional.of(grade);
+                });
     }
 
 }
