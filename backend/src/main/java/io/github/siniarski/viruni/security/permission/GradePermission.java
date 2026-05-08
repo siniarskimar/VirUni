@@ -10,6 +10,13 @@ public enum GradePermission {
     /**
      * Allows to delete the grade
      */
-    DELETE;
+    DELETE,
+
+    /**
+     * Allows to access the grade
+     */
+    READ
+
+    ;
 
 }
