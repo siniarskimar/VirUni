@@ -1,5 +1,6 @@
 package io.github.siniarski.viruni.security.permission;
 
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -7,7 +8,8 @@ import java.util.Set;
 
 public abstract class PermissionService<DomainObject, PermissionCategory> {
 
-    public abstract Set<PermissionCategory> getPermissions(Authentication auth, DomainObject targetDomainObject);
+    public abstract Set<PermissionCategory> getPermissions(@Nullable Authentication auth,
+                                                           DomainObject targetDomainObject);
 
     public Set<PermissionCategory> getPermissions(DomainObject targetDomainObject) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
