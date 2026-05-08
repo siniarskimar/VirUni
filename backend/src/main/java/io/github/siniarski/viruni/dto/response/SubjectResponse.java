@@ -3,48 +3,26 @@ package io.github.siniarski.viruni.dto.response;
 import io.github.siniarski.viruni.security.SubjectPermissions;
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.Subject;
+import io.github.siniarski.viruni.security.permission.SubjectPermission;
 
 import java.time.Instant;
+import java.util.Set;
 
-public class SubjectResponse {
-    private long id;
-    private String name;
-    private String description;
-    private Account leadingTeacher;
-    private Instant createdAt;
+public record SubjectResponse (
+    long id,
+    String name,
+    String description,
+    AccountResponse leadingTeacher,
+    Instant createdAt,
+    Set<SubjectPermission> permissions
 
-    private SubjectPermissions permissions;
+//    public SubjectResponse(Subject subject, SubjectPermission permissions) {
+//        this.id = subject.getId();
+//        this.name = subject.getName();
+//        this.description = subject.getDescription();
+//        this.leadingTeacher = subject.getLeadingTeacher();
+//        this.createdAt = subject.getCreatedAt();
+//        this.permissions = permissions;
+//    }
 
-    public SubjectResponse(Subject subject, SubjectPermissions permissions) {
-        this.id = subject.getId();
-        this.name = subject.getName();
-        this.description = subject.getDescription();
-        this.leadingTeacher = subject.getLeadingTeacher();
-        this.createdAt = subject.getCreatedAt();
-        this.permissions = permissions;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public Account getLeadingTeacher() {
-        return leadingTeacher;
-    }
-
-    public SubjectPermissions getPermissions() {
-        return permissions;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-}
+) {}
