@@ -2,6 +2,7 @@ package io.github.siniarski.viruni.controller;
 
 import io.github.siniarski.viruni.RestResponse;
 import io.github.siniarski.viruni.dto.response.AccountResponse;
+import io.github.siniarski.viruni.dto.response.AccountResponseMapper;
 import io.github.siniarski.viruni.dto.response.PagedResponse;
 import io.github.siniarski.viruni.dto.request.UpdateAccountRequest;
 import io.github.siniarski.viruni.model.Account;
@@ -59,13 +60,8 @@ public class AccountController {
         }
         if(subjectId != null) specs.add(AccountSpecification.isParticipantOf(subjectId));
 
-        Function<Account, AccountResponse> mapper = acc -> new AccountResponse(
-                acc.getId(),
-                acc.getUsername(),
-                acc.getFirstname(),
-                acc.getLastname(),
-                accountPermissionService.getPermissions(acc)
-        );
+        Function<Account, AccountResponse> mapper = acc -> AccountResponseMapper.from(
+                acc, accountPermissionService.getPermissions(acc));
 
         if(specs.isEmpty())
             return new PagedResponse<>(this.accountRepository.findAll(pageable).map(mapper));
