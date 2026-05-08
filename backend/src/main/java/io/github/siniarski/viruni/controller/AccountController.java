@@ -12,7 +12,7 @@ import io.github.siniarski.viruni.repository.AccountSpecification;
 import io.github.siniarski.viruni.security.permission.AccountPermission;
 import io.github.siniarski.viruni.security.permission.AccountPermissionService;
 import io.github.siniarski.viruni.security.Authority;
-import io.github.siniarski.viruni.security.permission.PermissionEvaluator;
+import io.github.siniarski.viruni.security.permission.PermissionEvaluatorImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -31,17 +31,14 @@ import java.util.function.Function;
 @RequestMapping("/account")
 public class AccountController {
     private final AccountRepository accountRepository;
-    private final PermissionEvaluator permissionEvaluator;
     private final AccountPermissionService accountPermissionService;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public AccountController(AccountRepository accountRepository,
-                             PermissionEvaluator permissionEvaluator,
                              AccountPermissionService accountPermissionService,
                              PasswordEncoder passwordEncoder) {
         this.accountRepository = accountRepository;
-        this.permissionEvaluator = permissionEvaluator;
         this.accountPermissionService = accountPermissionService;
         this.passwordEncoder = passwordEncoder;
     }
@@ -80,7 +77,7 @@ public class AccountController {
     public ResponseEntity<?> getOne(@PathVariable long identifier) {
         Account account = accountRepository.findById(identifier).orElse(null);
         if(account == null) return RestResponse.notFound();
-        if(!permissionEvaluator.hasPermission(account, AccountPermission.VIEW))
+        if(!accountPermissionService.hasPermission(account, AccountPermission.VIEW))
             return RestResponse.forbidden("you don't have permission to view this account");
 
         return RestResponse.ok(new AccountResponse(
@@ -95,7 +92,7 @@ public class AccountController {
     private ResponseEntity<?> delete(Authentication auth, Account account) {
         if (account == null) return RestResponse.notFound();
 
-        if(!permissionEvaluator.hasPermission(auth, account, Authority.ACCOUNT_DELETE))
+        if(!accountPermissionService.hasPermission(auth, account, AccountPermission.DELETE))
             return RestResponse.forbidden("you don't have permission to delete this account");
 
         if (account.getRole().equals(AccountRole.ADMIN) && accountRepository.countByRole(AccountRole.ADMIN) == 1)
@@ -116,11 +113,11 @@ public class AccountController {
         Account account = accountRepository.findById(id).orElse(null);
         if(account == null) return RestResponse.notFound();
 
-        var canEdit = permissionEvaluator.hasPermission(account, AccountPermission.EDIT);
+        var canEdit = accountPermissionService.hasPermission(account, AccountPermission.EDIT);
         if(!canEdit)
             return RestResponse.forbidden("you are not permitted to update information on this account");
 
-        var canEditCredentials = permissionEvaluator.hasPermission(account, AccountPermission.EDIT_CREDENTIALS);
+        var canEditCredentials = accountPermissionService.hasPermission(account, AccountPermission.EDIT_CREDENTIALS);
         if(reqBody.password() != null && !canEditCredentials)
             return RestResponse.forbidden("you are not permitted to update credential information on this account");
 
