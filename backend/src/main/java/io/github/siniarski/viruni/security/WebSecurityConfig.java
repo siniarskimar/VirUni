@@ -3,7 +3,7 @@ package io.github.siniarski.viruni.security;
 import io.github.siniarski.viruni.security.auth.AccountDetailsServiceImpl;
 import io.github.siniarski.viruni.security.jwt.JwtAuthEntryPoint;
 import io.github.siniarski.viruni.security.jwt.JwtAuthTokenFilter;
-import io.github.siniarski.viruni.security.permission.PermissionEvaluator;
+import io.github.siniarski.viruni.security.permission.PermissionEvaluatorImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -102,20 +102,27 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    static MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy, PermissionEvaluator permissionEvaluator) {
+    static MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy, PermissionEvaluatorImpl permissionEvaluator) {
         DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
         expressionHandler.setRoleHierarchy(roleHierarchy);
         expressionHandler.setPermissionEvaluator(permissionEvaluator);
         return expressionHandler;
     }
 
+    /// This project mainly uses the implementation directly
+    /// because it contains useful shorthands and utilizes overloads
+    /// when types are known at call site
+    ///
+    /// This bean is to ensure compatibility with rest of Spring Boot
     @Bean
-    static org.springframework.security.access.PermissionEvaluator permissionEvaluator() {
-        return new PermissionEvaluator();
+    static org.springframework.security.access.PermissionEvaluator permissionEvaluator(
+            PermissionEvaluatorImpl permissionEvaluatorImpl
+    ) {
+        return permissionEvaluatorImpl;
     }
 
     @Bean
-    static PermissionEvaluator permissionEvaluatorImpl() {
-        return new PermissionEvaluator();
+    static PermissionEvaluatorImpl permissionEvaluatorImpl() {
+        return new PermissionEvaluatorImpl();
     }
 }
