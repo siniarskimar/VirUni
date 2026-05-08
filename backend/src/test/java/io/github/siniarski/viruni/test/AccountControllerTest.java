@@ -126,7 +126,7 @@ public class AccountControllerTest {
 
         // Make sure other fields stayed unchanged
         var accountResp = given()
-                .get("/account"+auth.getAccountId())
+                .get("/account/"+auth.getAccountId())
                 .then()
                 .statusCode(200)
                 .extract()
