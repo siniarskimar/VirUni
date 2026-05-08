@@ -33,7 +33,7 @@ public class GradePermissionService extends PermissionService<Grade, GradePermis
         if(!isGradeParty && !isAdmin) return Set.of();
 
         // TODO: Check subject membership
-        var isGradingTeacher = authAccount.getId() != grade.getTeacher().getId();
+        var isGradingTeacher = authAccount.getId() == grade.getTeacher().getId();
 
         Set<GradePermission> effectivePermissions = new HashSet<>();
         effectivePermissions.add(GradePermission.READ);
