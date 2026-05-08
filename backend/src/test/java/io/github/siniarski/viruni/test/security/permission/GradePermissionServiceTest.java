@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static io.github.siniarski.viruni.test.TestUtils.authenticateAs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -136,13 +137,6 @@ public class GradePermissionServiceTest {
         SecurityContextHolder.clearContext();
     }
 
-    Authentication authenticateAs(String username) {
-        var account = accountRepository.findByUsername(username).orElseThrow();
-        var principal = AccountPrinciple.build(account, roleHierarchy);
-        Authentication auth = new TestingAuthenticationToken(principal, null, principal.getAuthorities());
-        return auth;
-    }
-
     @Test
     void shouldDisallowUnauthenticated() {
         assertThat(service.getPermissions(null, grades.get(1)))
@@ -155,7 +149,7 @@ public class GradePermissionServiceTest {
         TestMocks.stubAccountRepositoryByUsername(accountRepository, accounts);
         TestMocks.stubGradeRepositoryById(gradeRepository, grades);
 
-        var auth = authenticateAs(authUsername);
+        var auth = authenticateAs(authUsername, accountRepository, roleHierarchy);
         var grade = gradeRepository.findById(targetId).orElseThrow();
 
         var perms = service.getPermissions(auth, grade);
