@@ -40,6 +40,20 @@ public class Grade {
         setValue(value);
     }
 
+    public Grade(long id,
+                 Subject subject,
+                 Account student,
+                 Account teacher,
+                 float value,
+                 Instant creation) {
+        this.id = id;
+        this.subject = subject;
+        this.student = student;
+        this.teacher = teacher;
+        this.value = value;
+        this.creation = creation;
+    }
+
     public long getId() {
         return id;
     }
