@@ -2,6 +2,7 @@ package io.github.siniarski.viruni.controller;
 
 import io.github.siniarski.viruni.RestResponse;
 import io.github.siniarski.viruni.dto.response.AccountResponse;
+import io.github.siniarski.viruni.dto.response.AccountResponseMapper;
 import io.github.siniarski.viruni.dto.response.PagedResponse;
 import io.github.siniarski.viruni.dto.request.UpdateAccountRequest;
 import io.github.siniarski.viruni.model.Account;
@@ -9,9 +10,10 @@ import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.model.Grade;
 import io.github.siniarski.viruni.repository.AccountRepository;
 import io.github.siniarski.viruni.repository.AccountSpecification;
-import io.github.siniarski.viruni.security.AccountPermissionService;
+import io.github.siniarski.viruni.security.permission.AccountPermission;
+import io.github.siniarski.viruni.security.permission.AccountPermissionService;
 import io.github.siniarski.viruni.security.Authority;
-import io.github.siniarski.viruni.security.PermissionEvaluator;
+import io.github.siniarski.viruni.security.permission.PermissionEvaluatorImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +21,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -29,16 +32,16 @@ import java.util.function.Function;
 @RequestMapping("/account")
 public class AccountController {
     private final AccountRepository accountRepository;
-    private final PermissionEvaluator permissionEvaluator;
     private final AccountPermissionService accountPermissionService;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public AccountController(AccountRepository accountRepository,
-                             PermissionEvaluator permissionEvaluator,
-                             AccountPermissionService accountPermissionService) {
+                             AccountPermissionService accountPermissionService,
+                             PasswordEncoder passwordEncoder) {
         this.accountRepository = accountRepository;
-        this.permissionEvaluator = permissionEvaluator;
         this.accountPermissionService = accountPermissionService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping
@@ -57,13 +60,8 @@ public class AccountController {
         }
         if(subjectId != null) specs.add(AccountSpecification.isParticipantOf(subjectId));
 
-        Function<Account, AccountResponse> mapper = acc -> new AccountResponse(
-                acc.getId(),
-                acc.getUsername(),
-                acc.getFirstname(),
-                acc.getLastname(),
-                null
-        );
+        Function<Account, AccountResponse> mapper = acc -> AccountResponseMapper.from(
+                acc, accountPermissionService.getPermissions(acc));
 
         if(specs.isEmpty())
             return new PagedResponse<>(this.accountRepository.findAll(pageable).map(mapper));
@@ -75,7 +73,7 @@ public class AccountController {
     public ResponseEntity<?> getOne(@PathVariable long identifier) {
         Account account = accountRepository.findById(identifier).orElse(null);
         if(account == null) return RestResponse.notFound();
-        if(!permissionEvaluator.hasPermission(account, Authority.ACCOUNT_VIEW))
+        if(!accountPermissionService.hasPermission(account, AccountPermission.VIEW))
             return RestResponse.forbidden("you don't have permission to view this account");
 
         return RestResponse.ok(new AccountResponse(
@@ -90,7 +88,7 @@ public class AccountController {
     private ResponseEntity<?> delete(Authentication auth, Account account) {
         if (account == null) return RestResponse.notFound();
 
-        if(!permissionEvaluator.hasPermission(auth, account, Authority.ACCOUNT_DELETE))
+        if(!accountPermissionService.hasPermission(auth, account, AccountPermission.DELETE))
             return RestResponse.forbidden("you don't have permission to delete this account");
 
         if (account.getRole().equals(AccountRole.ADMIN) && accountRepository.countByRole(AccountRole.ADMIN) == 1)
@@ -110,19 +108,35 @@ public class AccountController {
                                             @Valid @RequestBody UpdateAccountRequest reqBody) {
         Account account = accountRepository.findById(id).orElse(null);
         if(account == null) return RestResponse.notFound();
-        if(!permissionEvaluator.hasPermission(account, Authority.ACCOUNT_UPDATE))
+
+        var canEdit = accountPermissionService.hasPermission(account, AccountPermission.EDIT);
+        if(!canEdit)
             return RestResponse.forbidden("you are not permitted to update information on this account");
 
-        if(reqBody.getFirstname() != null) {
-            account.setFirstname(reqBody.getFirstname());
+        var canEditCredentials = accountPermissionService.hasPermission(account, AccountPermission.EDIT_CREDENTIALS);
+        if(reqBody.password() != null && !canEditCredentials)
+            return RestResponse.forbidden("you are not permitted to update credential information on this account");
+
+        if(reqBody.firstname() != null) {
+            account.setFirstname(reqBody.firstname());
         }
 
-        if(reqBody.getLastname() != null) {
-            account.setLastname(reqBody.getLastname());
+        if(reqBody.lastname() != null) {
+            account.setLastname(reqBody.lastname());
+        }
+
+        if(reqBody.password() != null) {
+            account.setPassword(passwordEncoder.encode(reqBody.password()));
         }
 
         accountRepository.save(account);
-        return RestResponse.ok(account);
+        return RestResponse.ok(new AccountResponse(
+                account.getId(),
+                account.getUsername(),
+                account.getFirstname(),
+                account.getLastname(),
+                accountPermissionService.getPermissions(account)
+        ));
     }
 
     @GetMapping("/{id}/grade")

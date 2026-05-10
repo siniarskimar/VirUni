@@ -1,6 +1,7 @@
 package io.github.siniarski.viruni.test;
 
-import io.github.siniarski.viruni.security.AccountPermissionService;
+import io.github.siniarski.viruni.repository.AccountRepository;
+import io.github.siniarski.viruni.security.permission.AccountPermissionService;
 import io.github.siniarski.viruni.security.auth.AccountDetailsServiceImpl;
 import io.github.siniarski.viruni.service.RoleHierarchyService;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -16,10 +17,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class TestConfig {
 
     @Bean
-    DaoAuthenticationProvider authProvider() {
+    DaoAuthenticationProvider authProvider(UserDetailsService userDetailsService,
+                                           PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService());
-        provider.setPasswordEncoder(passwordEncoder());
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
 
@@ -29,13 +31,14 @@ public class TestConfig {
     }
 
     @Bean
-    public AccountPermissionService accountPermissionService() {
-        return new AccountPermissionService();
+    public AccountPermissionService accountPermissionService(RoleHierarchyService roleHierarchyService) {
+        return new AccountPermissionService(roleHierarchyService);
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        return new AccountDetailsServiceImpl();
+    public UserDetailsService userDetailsService(RoleHierarchy roleHierarchy,
+                                                 AccountRepository accountRepository) {
+        return new AccountDetailsServiceImpl(accountRepository, roleHierarchy);
     }
 
     @Bean
@@ -47,10 +50,11 @@ public class TestConfig {
     }
 
     @Bean
-    public RoleHierarchyService roleHierarchyService() {
+    public RoleHierarchyService roleHierarchyService(RoleHierarchy roleHierarchy,
+                                                     UserDetailsService userDetailsService) {
         return new RoleHierarchyService(
-                roleHierarchy(),
-                userDetailsService()
+                roleHierarchy,
+                userDetailsService
         );
     }
 }

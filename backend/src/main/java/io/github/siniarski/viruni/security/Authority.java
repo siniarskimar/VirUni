@@ -3,25 +3,22 @@ package io.github.siniarski.viruni.security;
 import org.springframework.security.core.GrantedAuthority;
 
 public enum Authority implements GrantedAuthority {
+
+    /**
+     * Allows to create new subjects
+     */
     SUBJECT_CREATE,
-    SUBJECT_VIEW,
-    SUBJECT_UPDATE,
-    SUBJECT_DELETE,
 
-    GRADE_CREATE,
-    GRADE_VIEW,
-    GRADE_DELETE,
-    GRADE_UPDATE,
+    /**
+     * Allows to browse the list of subjects
+     */
+    SUBJECTS_READ,
 
-    ACCOUNT_VIEW,
-    ACCOUNT_UPDATE,
-    ACCOUNT_UPDATE_CREDENTIALS,
-    ACCOUNT_DELETE,
-
-    BROWSE_SUBJECTS,
-    SUBJECT_MANAGEMENT,
-    GRADE_MANAGEMENT,
-    CREATE_TEACHER_TOKEN;
+    /**
+     * Allows to renew the access token which requested renewal
+     */
+    TOKEN_RENEW,
+;
 
     @Override
     public String getAuthority() {

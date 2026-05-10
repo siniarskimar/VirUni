@@ -6,9 +6,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.HashSet;
 import java.util.List;
 
+import io.github.siniarski.viruni.dto.request.UpdateAccountRequest;
 import io.github.siniarski.viruni.dto.response.AccountResponse;
 import io.github.siniarski.viruni.dto.response.SignInResponse;
-import io.github.siniarski.viruni.security.Authority;
+import io.github.siniarski.viruni.security.permission.AccountPermission;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +62,7 @@ public class AccountControllerTest {
         accountRepository.saveAll(mockAccounts);
     }
 
-    SignInResponse authorizeAs(SignInRequest form) {
+    SignInResponse authenticateAs(SignInRequest form) {
         var resp = given()
                 .contentType(ContentType.JSON)
                 .body(form)
@@ -81,13 +82,13 @@ public class AccountControllerTest {
     @Test
     public void shouldGetAccount_self() {
         insertMockAccounts();
-        var authorization = authorizeAs(new SignInRequest("aliciaprice", "magics"));
+        var authorization = authenticateAs(new SignInRequest("aliciaprice", "magics"));
 
         var resp = given()
                 .contentType(ContentType.JSON)
                 .when()
                 .log().ifValidationFails(LogDetail.ALL)
-                .get("/account/me")
+                .get("/account/" + authorization.getAccountId())
                 .then()
                 .log().ifValidationFails(LogDetail.BODY)
                 .statusCode(200)
@@ -100,12 +101,49 @@ public class AccountControllerTest {
                         "aliciaprice",
                         "Alicia",
                         "Price",
-                        new HashSet<>(List.of(
-                                Authority.ACCOUNT_DELETE,
-                                Authority.ACCOUNT_VIEW,
-                                Authority.ACCOUNT_UPDATE,
-                                Authority.ACCOUNT_UPDATE_CREDENTIALS
+                        new HashSet<AccountPermission>(List.of(
+                                AccountPermission.DELETE,
+                                AccountPermission.VIEW,
+                                AccountPermission.EDIT,
+                                AccountPermission.EDIT_CREDENTIALS
                         ))
                 ));
+    }
+
+    @Test
+    public void shouldUpdatePassword(){
+        insertMockAccounts();
+        var originalSignIn = new SignInRequest("ramirezangela", "magics");
+        var auth = authenticateAs(originalSignIn);
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(new UpdateAccountRequest(null, null, "supersecret123"))
+                .patch("/account/"+auth.getAccountId())
+                .then()
+                .log().ifValidationFails(LogDetail.BODY)
+                .statusCode(200);
+
+        // Make sure other fields stayed unchanged
+        var accountResp = given()
+                .get("/account/"+auth.getAccountId())
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(AccountResponse.class);
+
+        assertThat(accountResp.getFirstname()).isEqualTo("Angela");
+        assertThat(accountResp.getLastname()).isEqualTo("Ramirez");
+
+        RestAssured.requestSpecification = null;
+
+        // Check that password has actually been changed
+        given()
+                .contentType(ContentType.JSON)
+                .body(originalSignIn)
+                .post("/signin")
+                .then()
+                .log().ifValidationFails(LogDetail.BODY)
+                .statusCode(401);
     }
 }

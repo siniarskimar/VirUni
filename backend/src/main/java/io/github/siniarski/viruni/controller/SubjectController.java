@@ -5,11 +5,12 @@ import io.github.siniarski.viruni.dto.request.CreateSubjectRequest;
 import io.github.siniarski.viruni.dto.request.UpdateSubjectRequest;
 import io.github.siniarski.viruni.dto.response.PagedResponse;
 import io.github.siniarski.viruni.dto.response.SubjectResponse;
+import io.github.siniarski.viruni.dto.response.SubjectResponseMapper;
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.model.Subject;
-import io.github.siniarski.viruni.security.SubjectPermissionService;
-import io.github.siniarski.viruni.security.SubjectPermissions;
+import io.github.siniarski.viruni.security.permission.SubjectPermission;
+import io.github.siniarski.viruni.security.permission.SubjectPermissionService;
 import io.github.siniarski.viruni.service.RoleHierarchyService;
 import io.github.siniarski.viruni.repository.AccountRepository;
 import io.github.siniarski.viruni.repository.SubjectRepository;
@@ -22,13 +23,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -74,9 +73,9 @@ public class SubjectController {
         Subject subject = subjectRepository.findById(id).orElse(null);
         if(subject == null) return RestResponse.notFound();
 
-        SubjectPermissions perms = this.subjectPermissionService.computePermissions(subject, auth);
-        SubjectResponse responseObject = new SubjectResponse(subject, perms);
-        return RestResponse.ok(responseObject);
+        return RestResponse.ok(
+                SubjectResponseMapper.from(subject, subjectPermissionService.getPermissions(subject))
+        );
     }
 
     private ResponseEntity<?> create(CreateSubjectRequest form, Account leadingTeacher, Authentication auth) {
@@ -90,7 +89,6 @@ public class SubjectController {
                 return RestResponse.badRequest("some participants not found");
             }
 
-            this.subjectPermissionService.evictFromCache(subject, participants);
             subject.getParticipants().addAll(participants);
         }
 
@@ -99,9 +97,9 @@ public class SubjectController {
         subject.getParticipants().add(leadingTeacher);
         this.subjectRepository.save(subject);
 
-        SubjectPermissions perms = this.subjectPermissionService.computePermissions(subject, auth);
-        SubjectResponse responseObject = new SubjectResponse(subject, perms);
-        return RestResponse.created(responseObject);
+        return RestResponse.created(
+                SubjectResponseMapper.from(subject, subjectPermissionService.getPermissions(subject))
+        );
     }
 
     private ResponseEntity<?> createOneByAdmin(CreateSubjectRequest form, Authentication auth) {
@@ -135,7 +133,7 @@ public class SubjectController {
         Subject subject = this.subjectRepository.findById(id).orElse(null);
         if(subject == null) return RestResponse.notFound();
 
-        if(!subjectPermissionService.hasDeletePermission(subject, auth)) {
+        if(!subjectPermissionService.hasPermission(subject, SubjectPermission.DELETE)) {
             return RestResponse.forbidden("Insufficient permissions");
         }
 
@@ -143,17 +141,38 @@ public class SubjectController {
         return RestResponse.noContent();
     }
 
+    @Transactional
+    private Optional<ResponseEntity<RestResponse.ErrorResponse>> assignAccounts(
+            Subject subject,
+            List<Long> accountIds
+    ) {
+        if(!subjectPermissionService.hasPermission(subject, SubjectPermission.USERS_UPDATE))
+            return Optional.of(
+                    RestResponse.forbidden(
+                            "you don't have permission to manage participants of this subject"));
+
+        List<Account> foundAccounts = accountRepository.findAllById(accountIds);
+        Set<Long> foundAccountIds = foundAccounts.stream()
+                .map(Account::getId)
+                .collect(Collectors.toSet());
+
+        List<Long> missingIds = accountIds.stream()
+                .filter(accId -> !foundAccountIds.contains(accId))
+                .toList();
+
+        if(!missingIds.isEmpty())
+            return Optional.of(
+                    RestResponse.badRequest(
+                            "could not find account", missingIds));
+
+        subject.getParticipants().addAll(foundAccounts);
+        return Optional.empty();
+    }
+
     @PostMapping("/{id}/account")
-    @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<?> assignAccount(@PathVariable long id, @Valid @RequestBody long accountId) {
+    public ResponseEntity<?> assignAccounts(@PathVariable long id, @RequestBody List<Long> accountIds) {
         Subject subject = subjectRepository.findById(id).orElse(null);
         if(subject == null) return RestResponse.notFound();
-
-        Account account = accountRepository.findById(accountId).orElse(null);
-        if(account == null) return RestResponse.badRequest("student not found");
-
-        subjectPermissionService.evictFromCache(subject, account);
-        subject.getParticipants().add(account);
 
         subjectRepository.save(subject);
         return RestResponse.ok();
@@ -166,6 +185,9 @@ public class SubjectController {
         Subject subject = subjectRepository.findById(id).orElse(null);
         if(subject == null) return RestResponse.notFound();
 
+        if(!subjectPermissionService.hasPermission(subject, SubjectPermission.USERS_UPDATE))
+            return RestResponse.forbidden("you don't have permission to manage participants of this subject");
+
         Account account = accountRepository.findById(accountId).orElse(null);
         if(account == null) return RestResponse.notFound();
 
@@ -177,7 +199,7 @@ public class SubjectController {
 
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<?> update(@PathVariable long id, @Valid @RequestBody UpdateSubjectRequest updates, Authentication auth) {
+    public ResponseEntity<?> update(@PathVariable long id, @Valid @RequestBody UpdateSubjectRequest updates) {
         Subject subject = subjectRepository.findById(id).orElse(null);
         if(subject == null) return RestResponse.notFound();
 
@@ -185,10 +207,8 @@ public class SubjectController {
         if(updates.getDescription() != null) subject.setDescription(updates.getDescription());
 
         subjectRepository.save(subject);
-
-
-        SubjectPermissions perms = this.subjectPermissionService.computePermissions(subject, auth);
-        SubjectResponse responseObject = new SubjectResponse(subject, perms);
-        return RestResponse.ok(responseObject);
+        return RestResponse.ok(
+                SubjectResponseMapper.from(subject, subjectPermissionService.getPermissions(subject))
+        );
     }
 }
