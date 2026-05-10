@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class AccountPrinciple implements UserDetails {
+public class AccountPrincipal implements UserDetails {
     private Long id;
 
     private String username;
@@ -28,9 +28,9 @@ public class AccountPrinciple implements UserDetails {
     @JsonIgnore
     private Account account;
 
-    public AccountPrinciple() {}
+    public AccountPrincipal() {}
 
-    public AccountPrinciple(Long id, String username, String password, Collection<? extends GrantedAuthority> authorities, Account account) {
+    public AccountPrincipal(Long id, String username, String password, Collection<? extends GrantedAuthority> authorities, Account account) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -38,7 +38,7 @@ public class AccountPrinciple implements UserDetails {
         this.account = account;
     }
 
-    public static AccountPrinciple build(Account account, RoleHierarchy roleHierarchy) {
+    public static AccountPrincipal build(Account account, RoleHierarchy roleHierarchy) {
         AccountRole role = account.getRole();
         SimpleGrantedAuthority roleAuthority = new SimpleGrantedAuthority(role.getName());
 
@@ -61,7 +61,7 @@ public class AccountPrinciple implements UserDetails {
             authorities.add(Authority.CREATE_TEACHER_TOKEN);
         }
 
-        return new AccountPrinciple(
+        return new AccountPrincipal(
                 account.getId(),
                 account.getUsername(),
                 account.getPassword(),
@@ -107,7 +107,7 @@ public class AccountPrinciple implements UserDetails {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof AccountPrinciple that)) return false;
+        if (!(o instanceof AccountPrincipal that)) return false;
         return Objects.equals(id, that.id);
     }
 

@@ -26,6 +26,6 @@ public class AccountDetailsServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("Account with username '" + username + "' not found");
         }
 
-        return AccountPrinciple.build(account, roleHierarchy);
+        return AccountPrincipal.build(account, roleHierarchy);
     }
 }

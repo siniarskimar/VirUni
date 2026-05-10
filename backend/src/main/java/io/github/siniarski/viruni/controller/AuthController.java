@@ -1,7 +1,7 @@
 package io.github.siniarski.viruni.controller;
 
 import io.github.siniarski.viruni.RestResponse;
-import io.github.siniarski.viruni.security.auth.AccountPrinciple;
+import io.github.siniarski.viruni.security.auth.AccountPrincipal;
 import io.github.siniarski.viruni.dto.response.SignInResponse;
 import io.github.siniarski.viruni.dto.request.SignInRequest;
 import io.github.siniarski.viruni.dto.request.SignUpRequest;
@@ -49,7 +49,7 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         JwtDetails jwtDetails = jwtProvider.generateJwtToken(authentication);
-        AccountPrinciple userDetails = (AccountPrinciple) authentication.getPrincipal();
+        AccountPrincipal userDetails = (AccountPrincipal) authentication.getPrincipal();
 
         return RestResponse.ok(new SignInResponse(jwtDetails, userDetails.getUsername(), userDetails.getId(), userDetails.getAuthorities()));
     }
@@ -81,7 +81,7 @@ public class AuthController {
             return RestResponse.notFound();
         }
         JwtDetails jwtDetails = jwtProvider.generateJwtToken(auth);
-        AccountPrinciple userDetails = (AccountPrinciple) auth.getPrincipal();
+        AccountPrincipal userDetails = (AccountPrincipal) auth.getPrincipal();
 
         return RestResponse.ok(new SignInResponse(jwtDetails, userDetails.getUsername(), userDetails.getId(), userDetails.getAuthorities()));
     }
