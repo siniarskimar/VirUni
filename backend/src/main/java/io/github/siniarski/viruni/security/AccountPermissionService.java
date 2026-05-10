@@ -2,7 +2,7 @@ package io.github.siniarski.viruni.security;
 
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
-import io.github.siniarski.viruni.security.auth.AccountPrinciple;
+import io.github.siniarski.viruni.security.auth.AccountPrincipal;
 import io.github.siniarski.viruni.service.RoleHierarchyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -20,7 +20,7 @@ public class AccountPermissionService {
     private RoleHierarchyService roleHierarchyService;
 
     public Set<Authority> getPermissions(Authentication authentication, Account account) {
-        AccountPrinciple principal = (AccountPrinciple) authentication.getPrincipal();
+        AccountPrincipal principal = (AccountPrincipal) authentication.getPrincipal();
         Set<Authority> permissions = new HashSet<>();
 
         permissions.add(Authority.ACCOUNT_VIEW);

@@ -1,6 +1,6 @@
 package io.github.siniarski.viruni.security;
 
-import io.github.siniarski.viruni.security.auth.AccountPrinciple;
+import io.github.siniarski.viruni.security.auth.AccountPrincipal;
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.model.Subject;
@@ -27,7 +27,7 @@ public class SubjectPermissionService {
     }
 
     private  AccountIdSubjectIdPair createKey(Subject subject, Authentication auth) {
-        AccountPrinciple principle = (AccountPrinciple) auth.getPrincipal();
+        AccountPrincipal principle = (AccountPrincipal) auth.getPrincipal();
         return new AccountIdSubjectIdPair(principle.getId(), subject.getId());
     }
 
@@ -50,7 +50,7 @@ public class SubjectPermissionService {
     }
 
     public SubjectPermissions computePermissions(Subject subject, Authentication auth) {
-        AccountPrinciple principle = (AccountPrinciple) auth.getPrincipal();
+        AccountPrincipal principle = (AccountPrincipal) auth.getPrincipal();
 
         return cache.computeIfAbsent(createKey(subject, auth), (k) -> {
             SubjectPermissions perms = new SubjectPermissions();

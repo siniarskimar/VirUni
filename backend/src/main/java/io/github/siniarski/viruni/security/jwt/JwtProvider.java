@@ -1,6 +1,6 @@
 package io.github.siniarski.viruni.security.jwt;
 
-import io.github.siniarski.viruni.security.auth.AccountPrinciple;
+import io.github.siniarski.viruni.security.auth.AccountPrincipal;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
@@ -33,7 +33,7 @@ public class JwtProvider {
     }
 
     public JwtDetails generateJwtToken(Authentication authentication) {
-        AccountPrinciple principle = (AccountPrinciple) authentication.getPrincipal();
+        AccountPrincipal principle = (AccountPrincipal) authentication.getPrincipal();
 
         Date issuedAt = new Date();
         Date expires = new Date(issuedAt.getTime() + jwtExpiration*1000);

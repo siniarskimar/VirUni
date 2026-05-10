@@ -12,14 +12,12 @@ import io.github.siniarski.viruni.repository.AccountSpecification;
 import io.github.siniarski.viruni.security.AccountPermissionService;
 import io.github.siniarski.viruni.security.Authority;
 import io.github.siniarski.viruni.security.PermissionEvaluator;
-import io.github.siniarski.viruni.security.auth.AccountPrinciple;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 

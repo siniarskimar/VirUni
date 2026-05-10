@@ -1,16 +1,11 @@
 package io.github.siniarski.viruni.security;
 
 import io.github.siniarski.viruni.model.Account;
-import io.github.siniarski.viruni.security.auth.AccountPrinciple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class PermissionEvaluator implements org.springframework.security.access.PermissionEvaluator {
 
