@@ -25,7 +25,7 @@ public abstract class BaseIntegrationTest {
                 .log().ifValidationFails(LogDetail.ALL);
     }
 
-    public static RequestSpecification authSpec(String username, String password) {
+    protected static RequestSpecification authSpec(String username, String password) {
         return new RequestSpecBuilder()
                 .addHeader("Authorization", "Bearer " + fetchSignInResponse(username, password).getToken())
                 .build();
