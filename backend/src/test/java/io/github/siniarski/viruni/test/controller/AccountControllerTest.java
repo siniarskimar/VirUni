@@ -118,4 +118,18 @@ public class AccountControllerTest extends BaseIntegrationTest {
         assertThat(changed.getLastname()).isEqualTo(updateRequest.lastname());
         assertThat(changed.getPassword()).isNotEqualTo(originalAccount.getPassword());
     }
+
+    @Test
+    @DisplayName("PATCH /account/<id> forbids updating ")
+    public void patchAccount_forbidsUpdateOfForeignAccountDetails() {
+        var target = accountRepository.findByUsername("charlesangelica").orElseThrow();
+
+        givenAuthenticatedAs("ramirezangela", "magics")
+                .contentType(ContentType.JSON)
+                .body(new UpdateAccountRequest(null, null, "freeforall"))
+                .patch("/account/"+target.getId())
+                .then()
+                .log().ifValidationFails()
+                .statusCode(403);
+    }
 }
