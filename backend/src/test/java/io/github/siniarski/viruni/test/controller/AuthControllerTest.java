@@ -105,12 +105,20 @@ public class AuthControllerTest extends BaseIntegrationTest {
                 .statusCode(200);
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("validCredentialsCases")
     @DisplayName("POST /signup forbids duplicate usernames")
-    void postSignup_forbidsDuplicateUsernames() {
+    void postSignup_forbidsDuplicateUsernames(String username, String password) {
         given()
                 .contentType(ContentType.JSON)
-                .body(new SignUpRequest())
+                .body(new SignUpRequest(
+                        username,
+                        password,
+                        "firstname",
+                        "lastname",
+                        AccountRole.USER,
+                        null
+                ))
                 .log().ifValidationFails()
                 .post("/signup")
                 .then()
@@ -121,11 +129,16 @@ public class AuthControllerTest extends BaseIntegrationTest {
     @Test
     @DisplayName("POST /signup forbids regristration of administrators")
     void postSignup_forbidsRegristrationOfAdministrators() {
-        var req = new SignUpRequest();
-
         given()
                 .contentType(ContentType.JSON)
-                .body(new SignUpRequest())
+                .body(new SignUpRequest(
+                        "vendetta",
+                        "vengence",
+                        "V",
+                        "V",
+                        AccountRole.ADMIN,
+                        null)
+                )
                 .log().ifValidationFails()
                 .post("/signup")
                 .then()
