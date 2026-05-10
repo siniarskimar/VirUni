@@ -5,28 +5,30 @@ import io.github.siniarski.viruni.model.AccountRole;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public class SignUpRequest {
-    @NotBlank
-    @Size(min=4, max=64)
-    private String username;
+public record SignUpRequest(
+        @NotBlank
+        @Size(min=4, max=64)
+        String username,
 
-    @NotBlank
-    @Size(min=8, max=128)
-    private String password;
+        @NotBlank
+        @Size(min=8, max=128)
+        String password,
 
-    @NotBlank
-    @Size(min=1, max=50)
-    private String firstname;
+        @NotBlank
+        @Size(min=1, max=50)
+        String firstname,
 
-    @NotBlank
-    @Size(min=1, max=50)
-    private String lastname;
+        @NotBlank
+        @Size(min=1, max=50)
+        String lastname,
 
-    private AccountRole role = AccountRole.USER;
+        AccountRole role,
 
-    @JsonProperty("teacherToken")
-    private String teacherRegistrationToken;
+        @JsonProperty("teacherToken")
+        String teacherRegistrationToken
+) {
 
+    // TODO: Remove these getters and setters
     public String getUsername() {
         return username;
     }
