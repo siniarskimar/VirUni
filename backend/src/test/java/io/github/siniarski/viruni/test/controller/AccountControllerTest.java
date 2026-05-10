@@ -15,6 +15,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -63,7 +65,10 @@ public class AccountControllerTest extends BaseIntegrationTest {
                         "Angela", "Ramirez", AccountRole.USER),
                 new Account(
                         "charlesangelica", passwordEncoder.encode("secret"),
-                        "Angelica", "Charles", AccountRole.TEACHER));
+                        "Angelica", "Charles", AccountRole.TEACHER),
+                new Account(
+                        "admin", passwordEncoder.encode("admin"),
+                        "System", "admin", AccountRole.ADMIN));
 
         accountRepository.saveAll(mockAccounts);
     }
@@ -128,6 +133,31 @@ public class AccountControllerTest extends BaseIntegrationTest {
                 .contentType(ContentType.JSON)
                 .body(new UpdateAccountRequest(null, null, "freeforall"))
                 .patch("/account/"+target.getId())
+                .then()
+                .log().ifValidationFails()
+                .statusCode(403);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"charlesangelica", "ramirezangela"})
+    @DisplayName("DELETE /account/<id> allows admins to delete accounts")
+    public void deleteAccount_allowsAdminsToDeleteAccounts(String targetUsername) {
+        var target = accountRepository.findByUsername(targetUsername).orElseThrow();
+
+        givenAuthenticatedAs("admin", "admin")
+                .delete("/account/"+target.getId())
+                .then()
+                .log().ifValidationFails()
+                .statusCode(204);
+    }
+
+    @Test
+    @DisplayName("DELETE /account/<id> forbids regular users from deleting foreign accounts")
+    public void deleteAccount_forbidsDeletionOfForeignAccounts() {
+        var target = accountRepository.findByUsername("aliciaprice").orElseThrow();
+
+        givenAuthenticatedAs("ramirezangela", "magics")
+                .delete("/account/"+target.getId())
                 .then()
                 .log().ifValidationFails()
                 .statusCode(403);
