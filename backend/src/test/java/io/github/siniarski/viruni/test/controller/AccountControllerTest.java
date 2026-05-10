@@ -1,4 +1,4 @@
-package io.github.siniarski.viruni.test;
+package io.github.siniarski.viruni.test.controller;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,6 +10,7 @@ import io.github.siniarski.viruni.dto.request.UpdateAccountRequest;
 import io.github.siniarski.viruni.dto.response.AccountResponse;
 import io.github.siniarski.viruni.dto.response.SignInResponse;
 import io.github.siniarski.viruni.security.permission.AccountPermission;
+import io.github.siniarski.viruni.test.ContainerizedConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
