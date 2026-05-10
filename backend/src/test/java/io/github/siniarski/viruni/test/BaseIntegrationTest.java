@@ -4,7 +4,6 @@ import io.github.siniarski.viruni.dto.request.SignInRequest;
 import io.github.siniarski.viruni.dto.response.SignInResponse;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 
@@ -14,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Groups common functions used for integration tests.
- * 
+ *
  * All integration tests are expected to extend this class
  */
 public abstract class BaseIntegrationTest {
@@ -22,7 +21,7 @@ public abstract class BaseIntegrationTest {
 
     protected RequestSpecification givenAuthenticatedAs(String username, String password) {
         return RestAssured.given().spec(authSpec(username, password))
-                .log().ifValidationFails(LogDetail.ALL);
+                .log().ifValidationFails();
     }
 
     protected static RequestSpecification authSpec(String username, String password) {
