@@ -12,6 +12,7 @@ import io.github.siniarski.viruni.security.permission.AccountPermission;
 import io.github.siniarski.viruni.test.BaseIntegrationTest;
 import io.github.siniarski.viruni.test.ContainerizedConfiguration;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +69,8 @@ public class AccountControllerTest extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldGetAccount_self() {
+    @DisplayName("GET /account/<id> returns own account details")
+    public void getAccount_returnsOwnAccount() {
         var auth = fetchSignInResponse("aliciaprice", "magics");
 
         var resp = givenAuthenticatedAs("aliciaprice", "magics")
@@ -98,7 +100,8 @@ public class AccountControllerTest extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldUpdatePassword() {
+    @DisplayName("PATCH /account/<id> saves own account details to repository")
+    public void patchAccount_savesOwnAccountDetailsToRepository() {
         var auth = fetchSignInResponse("ramirezangela", "magics");
         var originalAccount = accountRepository.findById(auth.getAccountId()).orElseThrow();
 
