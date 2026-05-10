@@ -11,6 +11,7 @@ import io.github.siniarski.viruni.dto.response.AccountResponse;
 import io.github.siniarski.viruni.security.permission.AccountPermission;
 import io.github.siniarski.viruni.test.BaseIntegrationTest;
 import io.github.siniarski.viruni.test.ContainerizedConfiguration;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,11 @@ public class AccountControllerTest extends BaseIntegrationTest {
         RestAssured.baseURI = "http://localhost:" + serverPort;
         accountRepository.deleteAll();
         insertMockAccounts();
+    }
+
+    @AfterEach
+    void afterEach() {
+        AUTH_RESPONSES.clear();
     }
 
     void insertMockAccounts() {
