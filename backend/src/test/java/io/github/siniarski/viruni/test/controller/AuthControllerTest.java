@@ -1,6 +1,7 @@
-package io.github.siniarski.viruni.test;
+package io.github.siniarski.viruni.test.controller;
 
 import io.github.siniarski.viruni.repository.AccountRepository;
+import io.github.siniarski.viruni.test.ContainerizedConfiguration;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
