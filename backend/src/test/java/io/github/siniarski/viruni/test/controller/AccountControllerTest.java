@@ -1,7 +1,5 @@
 package io.github.siniarski.viruni.test.controller;
 
-import static io.github.siniarski.viruni.test.TestUtils.authenticateAs;
-import static io.github.siniarski.viruni.test.TestUtils.tryAuthenticateAs;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
