@@ -11,10 +11,7 @@ import io.github.siniarski.viruni.dto.response.AccountResponse;
 import io.github.siniarski.viruni.security.permission.AccountPermission;
 import io.github.siniarski.viruni.test.BaseIntegrationTest;
 import io.github.siniarski.viruni.test.ContainerizedConfiguration;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +27,7 @@ import io.restassured.RestAssured;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 
+@Tag("integration")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(ContainerizedConfiguration.class)
 public class AccountControllerTest extends BaseIntegrationTest {
