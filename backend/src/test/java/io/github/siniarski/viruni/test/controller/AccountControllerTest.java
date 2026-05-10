@@ -75,11 +75,9 @@ public class AccountControllerTest extends BaseIntegrationTest {
 
         var resp = givenAuthenticatedAs("aliciaprice", "magics")
                 .contentType(ContentType.JSON)
-                .when()
-                .log().ifValidationFails(LogDetail.ALL)
                 .get("/account/" + auth.getAccountId())
                 .then()
-                .log().ifValidationFails(LogDetail.BODY)
+                .log().ifValidationFails()
                 .statusCode(200)
                 .extract()
                 .as(AccountResponse.class);
