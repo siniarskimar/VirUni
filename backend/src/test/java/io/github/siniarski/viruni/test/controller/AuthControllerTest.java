@@ -2,6 +2,7 @@ package io.github.siniarski.viruni.test.controller;
 
 import io.github.siniarski.viruni.dto.request.SignInRequest;
 import io.github.siniarski.viruni.dto.request.SignUpRequest;
+import io.github.siniarski.viruni.dto.response.SignInResponse;
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.repository.AccountRepository;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("integration")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -43,6 +45,11 @@ public class AuthControllerTest extends BaseIntegrationTest {
         RestAssured.baseURI = "http://localhost:" + serverPort;
         accountRepository.deleteAll();
         insertMockAccounts();
+    }
+
+    @AfterEach
+    void afterEach() {
+        AUTH_RESPONSES.clear();
     }
 
     void insertMockAccounts() {
@@ -144,6 +151,28 @@ public class AuthControllerTest extends BaseIntegrationTest {
                 .then()
                 .log().ifValidationFails()
                 .statusCode(403);
+    }
+
+    @Test
+    @DisplayName("POST /auth/renew creates new token with delayed expiry")
+    void postAuthRenew_createsNewTokenWithDelayedExpiry() throws InterruptedException {
+        var auth = fetchSignInResponse("ramirezangela", "magics");
+        var originalExpiry = auth.getTokenExpires();
+
+        // Expiry is in seconds
+        // Wait a second and then renew
+        Thread.sleep(1000);
+
+        var resp = givenAuthenticatedAs("ramirezangela", "magics")
+                .log().ifValidationFails()
+                .post("/auth/renew")
+                .then()
+                .log().ifValidationFails()
+                .statusCode(200)
+                .extract()
+                .as(SignInResponse.class);
+
+        assertThat(originalExpiry).isLessThan(resp.getTokenExpires());
     }
 
 }
