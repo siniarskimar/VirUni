@@ -103,20 +103,21 @@ public class AccountControllerTest extends BaseIntegrationTest {
     @DisplayName("PATCH /account/<id> saves own account details to repository")
     public void patchAccount_savesOwnAccountDetailsToRepository() {
         var auth = fetchSignInResponse("ramirezangela", "magics");
-        var originalAccount = accountRepository.findById(auth.getAccountId()).orElseThrow();
+        var updateRequest = new UpdateAccountRequest("Ramira", "Jolie", "supersecret123");
 
+        var originalAccount = accountRepository.findByUsername(auth.getUsername()).orElseThrow();
         givenAuthenticatedAs("ramirezangela", "magics")
                 .contentType(ContentType.JSON)
-                .body(new UpdateAccountRequest("Ramira", "Jolie", "supersecret123"))
-                .patch("/account/" + auth.getAccountId())
+                .body(updateRequest)
+                .patch("/account/"+auth.getAccountId())
                 .then()
-                .log().ifValidationFails(LogDetail.BODY)
+                .log().ifValidationFails()
                 .statusCode(200);
 
-        var changed = accountRepository.findById(auth.getAccountId()).orElseThrow();
+        var changed = accountRepository.findByUsername(auth.getUsername()).orElseThrow();
 
-        assertThat(originalAccount.getFirstname()).isNotEqualTo(changed.getFirstname());
-        assertThat(originalAccount.getLastname()).isNotEqualTo(changed.getLastname());
-        assertThat(originalAccount.getPassword()).isNotEqualTo(changed.getPassword());
+        assertThat(changed.getFirstname()).isEqualTo(updateRequest.firstname());
+        assertThat(changed.getLastname()).isEqualTo(updateRequest.lastname());
+        assertThat(changed.getPassword()).isNotEqualTo(originalAccount.getPassword());
     }
 }
