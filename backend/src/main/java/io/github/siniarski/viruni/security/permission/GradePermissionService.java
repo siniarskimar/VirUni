@@ -3,7 +3,7 @@ package io.github.siniarski.viruni.security.permission;
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.model.Grade;
-import io.github.siniarski.viruni.security.auth.AccountPrinciple;
+import io.github.siniarski.viruni.security.auth.AccountPrincipal;
 import io.github.siniarski.viruni.service.RoleHierarchyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -23,7 +23,7 @@ public class GradePermissionService extends PermissionService<Grade, GradePermis
     public Set<GradePermission> getPermissions(Authentication auth, Grade grade) {
         if (auth == null) return Set.of();
 
-        AccountPrinciple principal = (AccountPrinciple) auth.getPrincipal();
+        AccountPrincipal principal = (AccountPrincipal) auth.getPrincipal();
         Account authAccount = principal.getAccount();
 
         var isAdmin = roleHierarchyService.hasRoleImplied(AccountRole.ADMIN, authAccount);

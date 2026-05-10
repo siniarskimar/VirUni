@@ -4,7 +4,6 @@ import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.repository.AccountRepository;
 import io.github.siniarski.viruni.security.auth.AccountDetailsServiceImpl;
-import io.github.siniarski.viruni.security.auth.AccountPrinciple;
 import io.github.siniarski.viruni.security.permission.AccountPermission;
 import io.github.siniarski.viruni.security.permission.AccountPermissionService;
 import io.github.siniarski.viruni.service.RoleHierarchyService;

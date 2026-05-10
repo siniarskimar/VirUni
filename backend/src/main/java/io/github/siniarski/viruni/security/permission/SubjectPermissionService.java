@@ -1,6 +1,6 @@
 package io.github.siniarski.viruni.security.permission;
 
-import io.github.siniarski.viruni.security.auth.AccountPrinciple;
+import io.github.siniarski.viruni.security.auth.AccountPrincipal;
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.model.Subject;
@@ -23,7 +23,7 @@ public class SubjectPermissionService extends PermissionService<Subject, Subject
     @Override
     public Set<SubjectPermission> getPermissions(Authentication auth, Subject targetDomainObject) {
         if(auth == null) return Set.of();
-        AccountPrinciple principal = (AccountPrinciple) auth.getPrincipal();
+        AccountPrincipal principal = (AccountPrincipal) auth.getPrincipal();
         Account account = principal.getAccount();
 
         Set<SubjectPermission> effectivePermissions = new HashSet<>();
