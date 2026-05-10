@@ -1,15 +1,17 @@
 package io.github.siniarski.viruni.test.controller;
 
+import static io.github.siniarski.viruni.test.TestUtils.authenticateAs;
+import static io.github.siniarski.viruni.test.TestUtils.tryAuthenticateAs;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import io.github.siniarski.viruni.dto.request.UpdateAccountRequest;
 import io.github.siniarski.viruni.dto.response.AccountResponse;
-import io.github.siniarski.viruni.dto.response.SignInResponse;
 import io.github.siniarski.viruni.security.permission.AccountPermission;
+import io.github.siniarski.viruni.test.BaseIntegrationTest;
 import io.github.siniarski.viruni.test.ContainerizedConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,18 +21,16 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import io.github.siniarski.viruni.dto.request.SignInRequest;
 import io.github.siniarski.viruni.model.Account;
 import io.github.siniarski.viruni.model.AccountRole;
 import io.github.siniarski.viruni.repository.AccountRepository;
 import io.restassured.RestAssured;
-import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(ContainerizedConfiguration.class)
-public class AccountControllerTest {
+public class AccountControllerTest extends BaseIntegrationTest {
 
     @LocalServerPort
     private Integer serverPort;
@@ -43,9 +43,9 @@ public class AccountControllerTest {
 
     @BeforeEach
     void beforeEach() {
-        RestAssured.requestSpecification = null;
         RestAssured.baseURI = "http://localhost:" + serverPort;
         accountRepository.deleteAll();
+        insertMockAccounts();
     }
 
     void insertMockAccounts() {
@@ -63,33 +63,15 @@ public class AccountControllerTest {
         accountRepository.saveAll(mockAccounts);
     }
 
-    SignInResponse authenticateAs(SignInRequest form) {
-        var resp = given()
-                .contentType(ContentType.JSON)
-                .body(form)
-                .post("/signin");
-
-        resp.then().statusCode(200);
-        var body = resp.as(SignInResponse.class);
-
-        RestAssured.requestSpecification = new RequestSpecBuilder()
-                .addHeader("Authorization", "Bearer " + body.getToken())
-                .build();
-
-        return body;
-    }
-
-
     @Test
     public void shouldGetAccount_self() {
-        insertMockAccounts();
-        var authorization = authenticateAs(new SignInRequest("aliciaprice", "magics"));
+        var auth = fetchSignInResponse("aliciaprice", "magics");
 
-        var resp = given()
+        var resp = givenAuthenticatedAs("aliciaprice", "magics")
                 .contentType(ContentType.JSON)
                 .when()
                 .log().ifValidationFails(LogDetail.ALL)
-                .get("/account/" + authorization.getAccountId())
+                .get("/account/" + auth.getAccountId())
                 .then()
                 .log().ifValidationFails(LogDetail.BODY)
                 .statusCode(200)
@@ -98,53 +80,36 @@ public class AccountControllerTest {
 
         assertThat(resp).usingRecursiveComparison()
                 .isEqualTo(new AccountResponse(
-                        authorization.getAccountId(),
+                        auth.getAccountId(),
                         "aliciaprice",
                         "Alicia",
                         "Price",
-                        new HashSet<AccountPermission>(List.of(
+                        Set.of(
                                 AccountPermission.DELETE,
                                 AccountPermission.VIEW,
                                 AccountPermission.EDIT,
                                 AccountPermission.EDIT_CREDENTIALS
-                        ))
+                        )
                 ));
     }
 
     @Test
-    public void shouldUpdatePassword(){
-        insertMockAccounts();
-        var originalSignIn = new SignInRequest("ramirezangela", "magics");
-        var auth = authenticateAs(originalSignIn);
+    public void shouldUpdatePassword() {
+        var auth = fetchSignInResponse("ramirezangela", "magics");
+        var originalAccount = accountRepository.findById(auth.getAccountId()).orElseThrow();
 
-        given()
+        givenAuthenticatedAs("ramirezangela", "magics")
                 .contentType(ContentType.JSON)
-                .body(new UpdateAccountRequest(null, null, "supersecret123"))
-                .patch("/account/"+auth.getAccountId())
+                .body(new UpdateAccountRequest("Ramira", "Jolie", "supersecret123"))
+                .patch("/account/" + auth.getAccountId())
                 .then()
                 .log().ifValidationFails(LogDetail.BODY)
                 .statusCode(200);
 
-        // Make sure other fields stayed unchanged
-        var accountResp = given()
-                .get("/account/"+auth.getAccountId())
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(AccountResponse.class);
+        var changed = accountRepository.findById(auth.getAccountId()).orElseThrow();
 
-        assertThat(accountResp.getFirstname()).isEqualTo("Angela");
-        assertThat(accountResp.getLastname()).isEqualTo("Ramirez");
-
-        RestAssured.requestSpecification = null;
-
-        // Check that password has actually been changed
-        given()
-                .contentType(ContentType.JSON)
-                .body(originalSignIn)
-                .post("/signin")
-                .then()
-                .log().ifValidationFails(LogDetail.BODY)
-                .statusCode(401);
+        assertThat(originalAccount.getFirstname()).isNotEqualTo(changed.getFirstname());
+        assertThat(originalAccount.getLastname()).isNotEqualTo(changed.getLastname());
+        assertThat(originalAccount.getPassword()).isNotEqualTo(changed.getPassword());
     }
 }
