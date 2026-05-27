@@ -15,6 +15,7 @@ import io.github.siniarski.viruni.service.RoleHierarchyService;
 import io.github.siniarski.viruni.repository.AccountRepository;
 import io.github.siniarski.viruni.repository.SubjectRepository;
 import io.github.siniarski.viruni.repository.SubjectSpecification;
+import jakarta.persistence.EntityManager;
 import jakarta.validation.Valid;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
@@ -38,16 +39,19 @@ public class SubjectController {
     private final AccountRepository accountRepository;
     private final RoleHierarchyService roleHierarchyService;
     private final SubjectPermissionService subjectPermissionService;
+    private final EntityManager entityManager;
 
     @Autowired
     public SubjectController(SubjectRepository subjectRepository,
                              AccountRepository accountRepository,
                              RoleHierarchyService roleHierarchyService,
-                             SubjectPermissionService subjectPermissionService) {
+                             SubjectPermissionService subjectPermissionService,
+                             EntityManager entityManager) {
         this.subjectRepository = subjectRepository;
         this.accountRepository = accountRepository;
         this.roleHierarchyService = roleHierarchyService;
         this.subjectPermissionService = subjectPermissionService;
+        this.entityManager = entityManager;
     }
 
     @GetMapping
@@ -79,20 +83,20 @@ public class SubjectController {
     }
 
     private ResponseEntity<?> create(CreateSubjectRequest form, Account leadingTeacher, Authentication auth) {
-        Subject subject = new Subject(form.getName(), leadingTeacher);
-        if(form.getParticipants() != null) {
+        Subject subject = new Subject(form.name(), leadingTeacher);
+        if(form.participants() != null) {
             // TODO: move batch participant add to separate endpoint
-            Set<Account> participants = new HashSet<>(accountRepository.findAllById(form.getParticipants()));
+            Set<Account> participants = new HashSet<>(accountRepository.findAllById(form.participants()));
             Set<Long> foundParticipantsId = participants.stream().map(Account::getId).collect(Collectors.toSet());
 
-            if(!foundParticipantsId.containsAll(form.getParticipants())) {
+            if(!foundParticipantsId.containsAll(form.participants())) {
                 return RestResponse.badRequest("some participants not found");
             }
 
             subject.getParticipants().addAll(participants);
         }
 
-        if(form.getDescription() != null) subject.setDescription(form.getDescription());
+        if(form.description() != null) subject.setDescription(form.description());
 
         subject.getParticipants().add(leadingTeacher);
         this.subjectRepository.save(subject);
@@ -103,8 +107,8 @@ public class SubjectController {
     }
 
     private ResponseEntity<?> createOneByAdmin(CreateSubjectRequest form, Authentication auth) {
-        String leadingTeacherName = (form.getLeadingTeacherUsername() != null)
-                                    ? form.getLeadingTeacherUsername()
+        String leadingTeacherName = (form.leadingTeacherUsername() != null)
+                                    ? form.leadingTeacherUsername()
                                     : auth.getName();
 
         Account leadingTeacher = this.accountRepository.findByUsername(leadingTeacherName).orElse(null);
@@ -118,7 +122,7 @@ public class SubjectController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('SUBJECT_CREATE')")
     public ResponseEntity<?> createOne(@RequestBody @Valid CreateSubjectRequest subjectDTO, Authentication auth) {
         boolean hasAdminRole = roleHierarchyService.hasRoleImplied(AccountRole.ADMIN, auth);
         if(hasAdminRole) return createOneByAdmin(subjectDTO, auth);
@@ -170,9 +174,26 @@ public class SubjectController {
     }
 
     @PostMapping("/{id}/account")
-    public ResponseEntity<?> assignAccounts(@PathVariable long id, @RequestBody List<Long> accountIds) {
+    public ResponseEntity<?> assignAccounts(@PathVariable long id,
+                                            @RequestBody List<Long> accountIds) {
         Subject subject = subjectRepository.findById(id).orElse(null);
         if(subject == null) return RestResponse.notFound();
+
+        var accountIdsDistinct = new HashSet<>(accountIds);
+        var foundIds = accountRepository.findExistingIdsByIds(accountIds);
+        if(foundIds.size() != accountIdsDistinct.size()) {
+            accountIdsDistinct.removeAll(foundIds);
+            return RestResponse.badRequest(
+                    "Could not find accounts with given ids",
+                    accountIdsDistinct
+            );
+        }
+
+        List<Account> references = foundIds.stream()
+                .map(accId -> entityManager.getReference(Account.class, accId))
+                .collect(Collectors.toUnmodifiableList());
+
+        subject.getParticipants().addAll(references);
 
         subjectRepository.save(subject);
         return RestResponse.ok();
@@ -203,8 +224,8 @@ public class SubjectController {
         Subject subject = subjectRepository.findById(id).orElse(null);
         if(subject == null) return RestResponse.notFound();
 
-        if(updates.getName() != null) subject.setName(updates.getName());
-        if(updates.getDescription() != null) subject.setDescription(updates.getDescription());
+        if(updates.name() != null) subject.setName(updates.name());
+        if(updates.description() != null) subject.setDescription(updates.description());
 
         subjectRepository.save(subject);
         return RestResponse.ok(
