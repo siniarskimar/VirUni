@@ -17,6 +17,7 @@ INSERT INTO account(id, firstname, lastname, username, password, role_id) VALUES
 (8, 'Lars', 'Nielsen', 'larsnielsen', '$2a$10$FNOo9memi9db8Wo60DVvAO/x.AHjv.K5pWH9RkSgHdS/ga2ez51oi', 2), -- pass: secret (teacher)
 (9, 'Sofia', 'Martinez', 'sofiamartinez', '$2a$10$QPn8UiG7z1g.N5Jo1iNFp.TxPztWlxaTqEYPpMCAZWmpBGuS4Az0S', 2) -- pass: T3stP@ssw0rd (teacher)
 ;
+ALTER SEQUENCE account_id_seq RESTART 10;
 
 INSERT INTO subject(id, created_at, description, name, leading_teacher_id) VALUES
 (1, '2015-10-19 10:23:54+02', NULL, 'Principles of Macroeconomics', 3), -- lead by Angelica Charles
@@ -26,6 +27,7 @@ INSERT INTO subject(id, created_at, description, name, leading_teacher_id) VALUE
 (5, '2016-09-01 09:00:01+02', NULL, 'Philosophy of Science', 3), -- lead by Angelica Charles
 (6, '2016-09-01 09:00:01+02', NULL, 'Operating Systems', 4) -- lead by Maria Santos
 ;
+ALTER SEQUENCE subject_id_seq RESTART 7;
 
 -- Note: account 6 (Bruno) does not participate in any subject
 INSERT INTO subject_participants(subjects_id, participants_id) VALUES
@@ -61,3 +63,4 @@ INSERT INTO grade(id, creation, value, student_id, teacher_id, subject_id) VALUE
 (9, '2016-10-14 12:00:00+02', 2.5,  1, 4, 6),  -- Alicia: Operating Systems by Maria
 (10,'2016-10-15 13:30:00+02', 3.7,  3, 3, 5)   -- Angelica: Philosophy of Science by Angelica
 ;
+ALTER SEQUENCE grade_id_seq RESTART 11;
