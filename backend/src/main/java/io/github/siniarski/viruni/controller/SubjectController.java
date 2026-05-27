@@ -203,8 +203,8 @@ public class SubjectController {
         Subject subject = subjectRepository.findById(id).orElse(null);
         if(subject == null) return RestResponse.notFound();
 
-        if(updates.getName() != null) subject.setName(updates.getName());
-        if(updates.getDescription() != null) subject.setDescription(updates.getDescription());
+        if(updates.name() != null) subject.setName(updates.name());
+        if(updates.description() != null) subject.setDescription(updates.description());
 
         subjectRepository.save(subject);
         return RestResponse.ok(
