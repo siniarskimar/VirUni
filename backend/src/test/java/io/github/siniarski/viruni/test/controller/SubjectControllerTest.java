@@ -81,7 +81,8 @@ public class SubjectControllerTest extends BaseIntegrationTest {
                 .then()
                 .statusCode(200)
                 .extract()
-                .as(new TypeRef<PagedResponse<Subject>>(){});
+                .as(new TypeRef<PagedResponse<Subject>>() {
+                });
 
         assertThat(resp.totalElements()).isEqualTo(6);
         assertThat(resp.content().stream().map(Subject::getId))
@@ -101,7 +102,8 @@ public class SubjectControllerTest extends BaseIntegrationTest {
                 .then()
                 .statusCode(200)
                 .extract()
-                .as(new TypeRef<PagedResponse<Subject>>(){});
+                .as(new TypeRef<PagedResponse<Subject>>() {
+                });
 
         assertThat(resp.totalElements()).isEqualTo(3);
         assertThat(resp.content().stream().map(Subject::getId))
@@ -139,7 +141,7 @@ public class SubjectControllerTest extends BaseIntegrationTest {
         givenAuthenticatedAs(username, password)
                 .contentType(ContentType.JSON)
                 .log().ifValidationFails()
-                .delete("/subject/"+subject.getId())
+                .delete("/subject/" + subject.getId())
                 .then()
                 .log().ifValidationFails()
                 .statusCode(403);
@@ -175,7 +177,7 @@ public class SubjectControllerTest extends BaseIntegrationTest {
         givenAuthenticatedAs("admin", "admin")
                 .contentType(ContentType.JSON)
                 .log().ifValidationFails()
-                .delete("/subject/"+subject.getId())
+                .delete("/subject/" + subject.getId())
                 .then()
                 .log().ifValidationFails()
                 .statusCode(204);
@@ -193,7 +195,7 @@ public class SubjectControllerTest extends BaseIntegrationTest {
                 .contentType(ContentType.JSON)
                 .body(new UpdateSubjectRequest("Dolar dolar", "MONEY"))
                 .log().ifValidationFails()
-                .patch("/subject/"+subject.getId())
+                .patch("/subject/" + subject.getId())
                 .then()
                 .log().ifValidationFails()
                 .statusCode(200);
@@ -213,7 +215,7 @@ public class SubjectControllerTest extends BaseIntegrationTest {
                 .contentType(ContentType.JSON)
                 .body(new UpdateSubjectRequest("Macroeconomics Rulez", null))
                 .log().ifValidationFails()
-                .patch("/subject/"+subject.getId())
+                .patch("/subject/" + subject.getId())
                 .then()
                 .log().ifValidationFails()
                 .statusCode(200);
