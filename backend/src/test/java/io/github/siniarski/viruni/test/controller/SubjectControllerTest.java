@@ -3,6 +3,7 @@ package io.github.siniarski.viruni.test.controller;
 import io.github.siniarski.viruni.dto.request.CreateSubjectRequest;
 import io.github.siniarski.viruni.dto.request.UpdateSubjectRequest;
 import io.github.siniarski.viruni.dto.response.PagedResponse;
+import io.github.siniarski.viruni.dto.response.SubjectResponse;
 import io.github.siniarski.viruni.model.Subject;
 import io.github.siniarski.viruni.repository.AccountRepository;
 import io.github.siniarski.viruni.repository.SubjectRepository;
@@ -21,7 +22,9 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
@@ -111,9 +114,16 @@ public class SubjectControllerTest extends BaseIntegrationTest {
     @MethodSource("accountsWithoutSubjectManagmentPermissionsStream")
     @Sql("classpath:/fixtures/sql/mock_data.sql")
     void postSubject_forbidsTeachersAndRegularUsers(String username, String password) {
+        var leadingTeacher = accountRepository.findById(8L).orElseThrow();
+
         givenAuthenticatedAs(username, password)
                 .contentType(ContentType.JSON)
-                .body(new CreateSubjectRequest())
+                .body(new CreateSubjectRequest(
+                        "Scripting Languages",
+                        null,
+                        null,
+                        leadingTeacher.getUsername()
+                ))
                 .log().ifValidationFails()
                 .post("/subject")
                 .then()
@@ -142,14 +152,22 @@ public class SubjectControllerTest extends BaseIntegrationTest {
     @DisplayName("POST /subject permits creating new subjects by admins")
     @Sql("classpath:/fixtures/sql/mock_data.sql")
     void postSubject_permitsAdmins() {
-        givenAuthenticatedAs("admin", "admin")
+        var leadingTeacher = accountRepository.findById(9L).orElseThrow();
+
+        var resp = givenAuthenticatedAs("admin", "admin")
                 .contentType(ContentType.JSON)
-                .body(new CreateSubjectRequest())
+                .body(new CreateSubjectRequest(
+                        "Virtual Reality",
+                        null,
+                        null,
+                        leadingTeacher.getUsername()
+                ))
                 .log().ifValidationFails()
                 .post("/subject")
                 .then()
                 .log().ifValidationFails()
-                .statusCode(200);
+                .statusCode(201)
+                .extract().as(SubjectResponse.class);
     }
 
     @Test
@@ -165,7 +183,9 @@ public class SubjectControllerTest extends BaseIntegrationTest {
                 .delete("/subject/"+subject.getId())
                 .then()
                 .log().ifValidationFails()
-                .statusCode(200);
+                .statusCode(204);
+
+        assertThat(subjectRepository.findById(1L).orElse(null)).isNull();
     }
 
     @Test
@@ -177,33 +197,37 @@ public class SubjectControllerTest extends BaseIntegrationTest {
 
         givenAuthenticatedAs("admin", "admin")
                 .contentType(ContentType.JSON)
-                .body(new UpdateSubjectRequest())
+                .body(new UpdateSubjectRequest("Dolar dolar", "MONEY"))
                 .log().ifValidationFails()
                 .patch("/subject/"+subject.getId())
                 .then()
                 .log().ifValidationFails()
                 .statusCode(200);
+
+        subject = subjectRepository.findById(1L).orElseThrow();
+        assertThat(subject.getName()).isEqualTo("Dolar dolar");
+        assertThat(subject.getDescription()).isEqualTo("MONEY");
     }
 
     @Test
-    @DisplayName("PATCH /subject/<id> permits admins to change subject details")
+    @DisplayName("PATCH /subject/<id> forbids to change subject details")
     @Sql("classpath:/fixtures/sql/mock_data.sql")
     void patchSubject_forbidsTeachersFromNameUpdate() {
         // Given subject of id 1 exists
         var subject = subjectRepository.findById(1L).orElseThrow();
-        var request = new UpdateSubjectRequest();
-
-        // TODO: Refactor UpdateSubjectRequest into record
-        // request.setName("");
 
         givenAuthenticatedAs("charlesangelica", "secret")
                 .contentType(ContentType.JSON)
-                .body(request)
+                .body(new UpdateSubjectRequest("Macroeconomics Rulez", null))
                 .log().ifValidationFails()
                 .patch("/subject/"+subject.getId())
                 .then()
                 .log().ifValidationFails()
                 .statusCode(200);
+
+        var changedSubject = subjectRepository.findById(1L).orElseThrow();
+        assertThat(changedSubject.getName()).isEqualTo("Macroeconomics Rulez");
+        assertThat(changedSubject.getDescription()).isEqualTo(subject.getDescription());
     }
 
     @Test
@@ -212,7 +236,6 @@ public class SubjectControllerTest extends BaseIntegrationTest {
     void postSubjectAccount_teachersCanAddParticipants() {
         var subject = subjectRepository.findById(1L).orElseThrow();
         var targetParticipant = accountRepository.findById(2L).orElseThrow();
-
 
         givenAuthenticatedAs("charlesangelica", "secret")
                 .contentType(ContentType.JSON)
