@@ -118,7 +118,7 @@ public class SubjectController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('TEACHER')")
+    @PreAuthorize("hasAuthority('SUBJECT_CREATE')")
     public ResponseEntity<?> createOne(@RequestBody @Valid CreateSubjectRequest subjectDTO, Authentication auth) {
         boolean hasAdminRole = roleHierarchyService.hasRoleImplied(AccountRole.ADMIN, auth);
         if(hasAdminRole) return createOneByAdmin(subjectDTO, auth);
