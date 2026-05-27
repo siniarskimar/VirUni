@@ -3,6 +3,7 @@ package io.github.siniarski.viruni.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SoftDelete;
 
 import java.time.Instant;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
+@SoftDelete
 public class Subject {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

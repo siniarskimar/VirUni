@@ -19,13 +19,13 @@ INSERT INTO account(id, firstname, lastname, username, password, role_id) VALUES
 ;
 ALTER SEQUENCE account_id_seq RESTART 10;
 
-INSERT INTO subject(id, created_at, description, name, leading_teacher_id) VALUES
-(1, '2015-10-19 10:23:54+02', NULL, 'Principles of Macroeconomics', 3), -- lead by Angelica Charles
-(2, '2015-10-19 10:40:43+02', NULL, 'Linear Algebra', 4), -- lead by Maria Santos
-(3, '2016-09-01 09:00:00+02', NULL, 'Introduction to Statistics', 8), -- lead by Lars Nielsen
-(4, '2016-09-01 09:00:00+02', NULL, 'Data Structures', 9), -- lead by Sofia Martinez
-(5, '2016-09-01 09:00:01+02', NULL, 'Philosophy of Science', 3), -- lead by Angelica Charles
-(6, '2016-09-01 09:00:01+02', NULL, 'Operating Systems', 4) -- lead by Maria Santos
+INSERT INTO subject(id, created_at, description, name, leading_teacher_id, deleted) VALUES
+(1, '2015-10-19 10:23:54+02', NULL, 'Principles of Macroeconomics', 3, false), -- lead by Angelica Charles
+(2, '2015-10-19 10:40:43+02', NULL, 'Linear Algebra', 4, false), -- lead by Maria Santos
+(3, '2016-09-01 09:00:00+02', NULL, 'Introduction to Statistics', 8, false), -- lead by Lars Nielsen
+(4, '2016-09-01 09:00:00+02', NULL, 'Data Structures', 9, false), -- lead by Sofia Martinez
+(5, '2016-09-01 09:00:01+02', NULL, 'Philosophy of Science', 3, false), -- lead by Angelica Charles
+(6, '2016-09-01 09:00:01+02', NULL, 'Operating Systems', 4, false) -- lead by Maria Santos
 ;
 ALTER SEQUENCE subject_id_seq RESTART 7;
 
