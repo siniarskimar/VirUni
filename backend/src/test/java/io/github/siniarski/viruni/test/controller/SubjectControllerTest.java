@@ -22,9 +22,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
@@ -85,7 +83,9 @@ public class SubjectControllerTest extends BaseIntegrationTest {
                 .extract()
                 .as(new TypeRef<PagedResponse<Subject>>(){});
 
-        assertThat(resp.getTotalElements()).isEqualTo(6);
+        assertThat(resp.totalElements()).isEqualTo(6);
+        assertThat(resp.content().stream().map(Subject::getId))
+                .containsExactly(1L, 2L, 3L, 4L, 5L, 6L);
     }
 
     @Test
@@ -104,9 +104,9 @@ public class SubjectControllerTest extends BaseIntegrationTest {
                 .extract()
                 .as(new TypeRef<PagedResponse<Subject>>(){});
 
-        assertThat(resp.getTotalElements()).isEqualTo(1);
-        assertThat(resp.getContent().stream().map(Subject::getId))
-                .containsExactly(2L);
+        assertThat(resp.totalElements()).isEqualTo(3);
+        assertThat(resp.content().stream().map(Subject::getId))
+                .containsExactly(2L, 4L, 5L);
     }
 
     @ParameterizedTest
