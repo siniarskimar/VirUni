@@ -81,7 +81,6 @@ public class Subject {
     }
 
     public void setLeadingTeacher(Account teacher) {
-        getParticipants().add(teacher);
         this.leadingTeacher = teacher;
     }
 
