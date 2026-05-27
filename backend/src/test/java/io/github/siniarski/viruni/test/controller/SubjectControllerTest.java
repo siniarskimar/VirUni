@@ -237,6 +237,12 @@ public class SubjectControllerTest extends BaseIntegrationTest {
                 .then()
                 .log().ifValidationFails()
                 .statusCode(200);
+
+        assertThat(
+                subjectRepository
+                        .findParticipantIdsBySubjectId(subject.getId())
+                        .orElseThrow()
+        ).contains(2L);
     }
 
     @Test
@@ -252,5 +258,11 @@ public class SubjectControllerTest extends BaseIntegrationTest {
                 .then()
                 .log().ifValidationFails()
                 .statusCode(204);
+
+        assertThat(
+                subjectRepository
+                        .findParticipantIdsBySubjectId(subject.getId())
+                        .orElseThrow()
+        ).doesNotContain(1L);
     }
 }
