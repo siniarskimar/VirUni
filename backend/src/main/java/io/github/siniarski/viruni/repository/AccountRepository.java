@@ -9,8 +9,10 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpecificationExecutor<Account> {
@@ -26,6 +28,10 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
 
     boolean existsByIdAndSubjectsId(long id, long subjectId);
     Page<Account> findBySubjectsId(long subjectId, Pageable pageable);
+
+    @Query("SELECT DISTINCT u.id FROM Account u " +
+            "WHERE u.id IN :ids")
+    Set<Long> findExistingIdsByIds(Collection<Long> ids);
 
     @Query("SELECT u FROM Account u " +
             "WHERE " +

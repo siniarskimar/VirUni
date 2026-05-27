@@ -15,6 +15,7 @@ import io.github.siniarski.viruni.service.RoleHierarchyService;
 import io.github.siniarski.viruni.repository.AccountRepository;
 import io.github.siniarski.viruni.repository.SubjectRepository;
 import io.github.siniarski.viruni.repository.SubjectSpecification;
+import jakarta.persistence.EntityManager;
 import jakarta.validation.Valid;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
@@ -38,16 +39,19 @@ public class SubjectController {
     private final AccountRepository accountRepository;
     private final RoleHierarchyService roleHierarchyService;
     private final SubjectPermissionService subjectPermissionService;
+    private final EntityManager entityManager;
 
     @Autowired
     public SubjectController(SubjectRepository subjectRepository,
                              AccountRepository accountRepository,
                              RoleHierarchyService roleHierarchyService,
-                             SubjectPermissionService subjectPermissionService) {
+                             SubjectPermissionService subjectPermissionService,
+                             EntityManager entityManager) {
         this.subjectRepository = subjectRepository;
         this.accountRepository = accountRepository;
         this.roleHierarchyService = roleHierarchyService;
         this.subjectPermissionService = subjectPermissionService;
+        this.entityManager = entityManager;
     }
 
     @GetMapping
@@ -170,9 +174,26 @@ public class SubjectController {
     }
 
     @PostMapping("/{id}/account")
-    public ResponseEntity<?> assignAccounts(@PathVariable long id, @RequestBody List<Long> accountIds) {
+    public ResponseEntity<?> assignAccounts(@PathVariable long id,
+                                            @RequestBody List<Long> accountIds) {
         Subject subject = subjectRepository.findById(id).orElse(null);
         if(subject == null) return RestResponse.notFound();
+
+        var accountIdsDistinct = new HashSet<>(accountIds);
+        var foundIds = accountRepository.findExistingIdsByIds(accountIds);
+        if(foundIds.size() != accountIdsDistinct.size()) {
+            accountIdsDistinct.removeAll(foundIds);
+            return RestResponse.badRequest(
+                    "Could not find accounts with given ids",
+                    accountIdsDistinct
+            );
+        }
+
+        List<Account> references = foundIds.stream()
+                .map(accId -> entityManager.getReference(Account.class, accId))
+                .collect(Collectors.toUnmodifiableList());
+
+        subject.getParticipants().addAll(references);
 
         subjectRepository.save(subject);
         return RestResponse.ok();
