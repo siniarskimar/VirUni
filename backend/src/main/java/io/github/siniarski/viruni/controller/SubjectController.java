@@ -79,20 +79,20 @@ public class SubjectController {
     }
 
     private ResponseEntity<?> create(CreateSubjectRequest form, Account leadingTeacher, Authentication auth) {
-        Subject subject = new Subject(form.getName(), leadingTeacher);
-        if(form.getParticipants() != null) {
+        Subject subject = new Subject(form.name(), leadingTeacher);
+        if(form.participants() != null) {
             // TODO: move batch participant add to separate endpoint
-            Set<Account> participants = new HashSet<>(accountRepository.findAllById(form.getParticipants()));
+            Set<Account> participants = new HashSet<>(accountRepository.findAllById(form.participants()));
             Set<Long> foundParticipantsId = participants.stream().map(Account::getId).collect(Collectors.toSet());
 
-            if(!foundParticipantsId.containsAll(form.getParticipants())) {
+            if(!foundParticipantsId.containsAll(form.participants())) {
                 return RestResponse.badRequest("some participants not found");
             }
 
             subject.getParticipants().addAll(participants);
         }
 
-        if(form.getDescription() != null) subject.setDescription(form.getDescription());
+        if(form.description() != null) subject.setDescription(form.description());
 
         subject.getParticipants().add(leadingTeacher);
         this.subjectRepository.save(subject);
@@ -103,8 +103,8 @@ public class SubjectController {
     }
 
     private ResponseEntity<?> createOneByAdmin(CreateSubjectRequest form, Authentication auth) {
-        String leadingTeacherName = (form.getLeadingTeacherUsername() != null)
-                                    ? form.getLeadingTeacherUsername()
+        String leadingTeacherName = (form.leadingTeacherUsername() != null)
+                                    ? form.leadingTeacherUsername()
                                     : auth.getName();
 
         Account leadingTeacher = this.accountRepository.findByUsername(leadingTeacherName).orElse(null);
