@@ -15,7 +15,7 @@ INSERT INTO account(id, firstname, lastname, username, password, role_id) VALUES
 (6, 'Bruno', 'Keller', 'brunokeller', '$2a$10$Ev.DNUb0yjg/XK/YxhmiCenRzv3ZqPcSAw7zeE8mt3Z1J5os7WpSq', 1), -- pass: magics (regular, will NOT participate in any subject)
 (7, 'Priya', 'Shah', 'priyashah',    '$2a$10$Ev.DNUb0yjg/XK/YxhmiCenRzv3ZqPcSAw7zeE8mt3Z1J5os7WpSq', 1), -- pass: magics (regular, will be participant but no grades)
 (8, 'Lars', 'Nielsen', 'larsnielsen', '$2a$10$FNOo9memi9db8Wo60DVvAO/x.AHjv.K5pWH9RkSgHdS/ga2ez51oi', 2), -- pass: secret (teacher)
-(9, 'Sofia', 'Martinez', 'sofiamartinez', '$2a$10$QPn8UiG7z1g.N5Jo1iNFp.TxPztWlxaTqEYPpMCAZWmpBGuS4Az0S', 2), -- pass: T3stP@ssw0rd (teacher)
+(9, 'Sofia', 'Martinez', 'sofiamartinez', '$2a$10$QPn8UiG7z1g.N5Jo1iNFp.TxPztWlxaTqEYPpMCAZWmpBGuS4Az0S', 2) -- pass: T3stP@ssw0rd (teacher)
 ;
 
 INSERT INTO subject(id, created_at, description, name, leading_teacher_id) VALUES
