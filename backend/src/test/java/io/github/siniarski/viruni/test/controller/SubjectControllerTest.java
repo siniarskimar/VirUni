@@ -31,6 +31,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Tag("integration")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(ContainerizedConfiguration.class)
+@Sql(value = "classpath:/fixtures/sql/mock_data.sql",
+        executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 public class SubjectControllerTest extends BaseIntegrationTest {
     @LocalServerPort
     private Integer serverPort;
@@ -60,7 +62,6 @@ public class SubjectControllerTest extends BaseIntegrationTest {
 
     @Test
     @DisplayName("GET /subject forbids unauthenticated users")
-    @Sql("classpath:/fixtures/sql/mock_data.sql")
     void getSubject_forbidsUnauthenticated() {
         given()
                 .contentType(ContentType.JSON)
@@ -72,7 +73,6 @@ public class SubjectControllerTest extends BaseIntegrationTest {
 
     @Test
     @DisplayName("GET /subject lists subjects")
-    @Sql("classpath:/fixtures/sql/mock_data.sql")
     void getSubject_listing() {
         var resp = givenAuthenticatedAs("admin", "admin")
                 .contentType(ContentType.JSON)
@@ -90,7 +90,6 @@ public class SubjectControllerTest extends BaseIntegrationTest {
 
     @Test
     @DisplayName("GET /subject?participant=<id> filters by participants")
-    @Sql("classpath:/fixtures/sql/mock_data.sql")
     void getSubject_filtersByParticipant() {
         var participant = accountRepository.findById(2L).orElseThrow();
 
@@ -112,7 +111,6 @@ public class SubjectControllerTest extends BaseIntegrationTest {
     @ParameterizedTest
     @DisplayName("POST /subject forbids creating new subjects by teachers and regular users")
     @MethodSource("accountsWithoutSubjectManagmentPermissionsStream")
-    @Sql("classpath:/fixtures/sql/mock_data.sql")
     void postSubject_forbidsTeachersAndRegularUsers(String username, String password) {
         var leadingTeacher = accountRepository.findById(8L).orElseThrow();
 
@@ -134,7 +132,6 @@ public class SubjectControllerTest extends BaseIntegrationTest {
     @ParameterizedTest
     @DisplayName("DELETE /subject/<id> forbids deleting subjects by teachers and regular users")
     @MethodSource("accountsWithoutSubjectManagmentPermissionsStream")
-    @Sql("classpath:/fixtures/sql/mock_data.sql")
     void deleteSubject_forbidsTeachersAndRegularUsers(String username, String password) {
         // Given subject of id 1 exists
         var subject = subjectRepository.findById(1L).orElseThrow();
@@ -150,7 +147,6 @@ public class SubjectControllerTest extends BaseIntegrationTest {
 
     @Test
     @DisplayName("POST /subject permits creating new subjects by admins")
-    @Sql("classpath:/fixtures/sql/mock_data.sql")
     void postSubject_permitsAdmins() {
         var leadingTeacher = accountRepository.findById(9L).orElseThrow();
 
@@ -172,7 +168,6 @@ public class SubjectControllerTest extends BaseIntegrationTest {
 
     @Test
     @DisplayName("DELETE /subject/<id> permits deleting subjects by admins")
-    @Sql("classpath:/fixtures/sql/mock_data.sql")
     void deleteSubject_permitsAdmins() {
         // Given subject of id 1 exists
         var subject = subjectRepository.findById(1L).orElseThrow();
@@ -190,7 +185,6 @@ public class SubjectControllerTest extends BaseIntegrationTest {
 
     @Test
     @DisplayName("PATCH /subject/<id> permits admins to change subject details")
-    @Sql("classpath:/fixtures/sql/mock_data.sql")
     void patchSubject_permitsAdmins() {
         // Given subject of id 1 exists
         var subject = subjectRepository.findById(1L).orElseThrow();
@@ -211,7 +205,6 @@ public class SubjectControllerTest extends BaseIntegrationTest {
 
     @Test
     @DisplayName("PATCH /subject/<id> forbids to change subject details")
-    @Sql("classpath:/fixtures/sql/mock_data.sql")
     void patchSubject_forbidsTeachersFromNameUpdate() {
         // Given subject of id 1 exists
         var subject = subjectRepository.findById(1L).orElseThrow();
@@ -232,7 +225,6 @@ public class SubjectControllerTest extends BaseIntegrationTest {
 
     @Test
     @DisplayName("POST /subject/<id>/account allows teachers to add participants")
-    @Sql("classpath:/fixtures/sql/mock_data.sql")
     void postSubjectAccount_teachersCanAddParticipants() {
         var subject = subjectRepository.findById(1L).orElseThrow();
         var targetParticipant = accountRepository.findById(2L).orElseThrow();
@@ -249,7 +241,6 @@ public class SubjectControllerTest extends BaseIntegrationTest {
 
     @Test
     @DisplayName("DELETE /subject/<id>/account allows teachers to remove participants")
-    @Sql("classpath:/fixtures/sql/mock_data.sql")
     void deleteSubjectAccount_teachersCanRemoveParticipants() {
         var subject = subjectRepository.findById(1L).orElseThrow();
         var targetParticipant = accountRepository.findById(1L).orElseThrow();
@@ -262,6 +253,4 @@ public class SubjectControllerTest extends BaseIntegrationTest {
                 .log().ifValidationFails()
                 .statusCode(204);
     }
-
-
 }
