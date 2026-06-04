@@ -146,38 +146,17 @@ public class SubjectController {
     }
 
     @Transactional
-    private Optional<ResponseEntity<RestResponse.ErrorResponse>> assignAccounts(
-            Subject subject,
-            List<Long> accountIds
-    ) {
-        if(!subjectPermissionService.hasPermission(subject, SubjectPermission.USERS_UPDATE))
-            return Optional.of(
-                    RestResponse.forbidden(
-                            "you don't have permission to manage participants of this subject"));
-
-        List<Account> foundAccounts = accountRepository.findAllById(accountIds);
-        Set<Long> foundAccountIds = foundAccounts.stream()
-                .map(Account::getId)
-                .collect(Collectors.toSet());
-
-        List<Long> missingIds = accountIds.stream()
-                .filter(accId -> !foundAccountIds.contains(accId))
-                .toList();
-
-        if(!missingIds.isEmpty())
-            return Optional.of(
-                    RestResponse.badRequest(
-                            "could not find account", missingIds));
-
-        subject.getParticipants().addAll(foundAccounts);
-        return Optional.empty();
-    }
-
     @PostMapping("/{id}/account")
     public ResponseEntity<?> assignAccounts(@PathVariable long id,
                                             @RequestBody List<Long> accountIds) {
         Subject subject = subjectRepository.findById(id).orElse(null);
         if(subject == null) return RestResponse.notFound();
+
+        if(!subjectPermissionService.hasPermission(subject, SubjectPermission.USERS_UPDATE))
+            return RestResponse.forbidden(
+                            "you don't have permission to manage participants of this subject");
+
+        if(accountIds.size() == 0) return RestResponse.ok();
 
         var accountIdsDistinct = new HashSet<>(accountIds);
         var foundIds = accountRepository.findExistingIdsByIds(accountIds);
@@ -188,14 +167,7 @@ public class SubjectController {
                     accountIdsDistinct
             );
         }
-
-        List<Account> references = foundIds.stream()
-                .map(accId -> entityManager.getReference(Account.class, accId))
-                .collect(Collectors.toUnmodifiableList());
-
-        subject.getParticipants().addAll(references);
-
-        subjectRepository.save(subject);
+        subjectRepository.saveParticipantsByIds(subject.getId(), foundIds);
         return RestResponse.ok();
     }
 
