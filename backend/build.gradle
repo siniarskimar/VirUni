@@ -59,3 +59,12 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+flyway {
+	driver = "org.postgresql.Driver"
+	user = "postgres"
+	url = "jdbc:postgresql://${System.getenv("POSTGRES_HOSTNAME") ?: "localhost"}:5432/viruni"
+	password = System.getenv("POSTGRES_PASSWORD") ?: "postgres"
+	schemas = ["viruni_schema"]
+	defaultSchema = "viruni_schema"
+}
