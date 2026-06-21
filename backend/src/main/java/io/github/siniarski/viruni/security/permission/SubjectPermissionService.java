@@ -26,9 +26,16 @@ public class SubjectPermissionService extends PermissionService<Subject, Subject
         AccountPrincipal principal = (AccountPrincipal) auth.getPrincipal();
         Account account = principal.getAccount();
 
-        Set<SubjectPermission> effectivePermissions = new HashSet<>();
 
-        // TODO: check membership
+        if(roleHierarchyService.hasRoleImplied(AccountRole.ADMIN, account)) {
+            return Set.of(SubjectPermission.values());
+        }
+
+        if(!targetDomainObject.getParticipants().contains(account.getId())) {
+            return Set.of();
+        }
+
+        Set<SubjectPermission> effectivePermissions = new HashSet<>();
         effectivePermissions.add(SubjectPermission.VIEW);
 
         if(roleHierarchyService.hasRoleImplied(AccountRole.TEACHER, account)) {
@@ -37,10 +44,6 @@ public class SubjectPermissionService extends PermissionService<Subject, Subject
                     SubjectPermission.USERS_UPDATE,
                     SubjectPermission.EDIT
             ));
-        }
-
-        if(roleHierarchyService.hasRoleImplied(AccountRole.ADMIN, account)) {
-            effectivePermissions.add(SubjectPermission.DELETE);
         }
 
         return effectivePermissions;
