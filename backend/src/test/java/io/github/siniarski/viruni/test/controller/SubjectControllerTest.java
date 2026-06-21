@@ -248,6 +248,28 @@ public class SubjectControllerTest extends BaseIntegrationTest {
     }
 
     @Test
+    @DisplayName("POST /subject/<id>/account forbids teachers to add participants to arbitrary subjects")
+    void postSubjectAccount_teachersForbiddenFromArbitrarySubjects() {
+        var subject = subjectRepository.findById(4L).orElseThrow();
+        var targetParticipant = accountRepository.findById(2L).orElseThrow();
+
+        givenAuthenticatedAs("charlesangelica", "secret")
+                .contentType(ContentType.JSON)
+                .body(List.of(targetParticipant.getId()))
+                .log().ifValidationFails()
+                .post("/subject/%d/account".formatted(subject.getId()))
+                .then()
+                .log().ifValidationFails()
+                .statusCode(403);
+
+        assertThat(
+                subjectRepository
+                        .findParticipantIdsBySubjectId(subject.getId())
+                        .orElseThrow()
+        ).contains(2L);
+    }
+
+    @Test
     @DisplayName("DELETE /subject/<id>/account allows teachers to remove participants")
     void deleteSubjectAccount_teachersCanRemoveParticipants() {
         var subject = subjectRepository.findById(1L).orElseThrow();
