@@ -2,6 +2,7 @@ package io.github.siniarski.viruni.test.security.permission;
 
 import io.github.siniarski.viruni.model.*;
 import io.github.siniarski.viruni.repository.AccountRepository;
+import io.github.siniarski.viruni.repository.SubjectParticipantRepository;
 import io.github.siniarski.viruni.repository.SubjectRepository;
 import io.github.siniarski.viruni.security.auth.AccountDetailsServiceImpl;
 import io.github.siniarski.viruni.security.permission.GradePermission;
@@ -39,6 +40,9 @@ public class SubjectPermissionServiceTest {
     @Mock
     private SubjectRepository subjectRepository;
 
+    @Mock
+    private SubjectParticipantRepository subjectParticipantRepository;
+
     private UserDetailsService userDetailsService;
     private RoleHierarchy roleHierarchy;
     private RoleHierarchyService roleHierarchyService;
@@ -72,16 +76,19 @@ public class SubjectPermissionServiceTest {
             )
     );
 
+    private static final List<SubjectParticipant> subjectParticipants = List.of(
+            new SubjectParticipant(accounts.get(1), subjects.get(0), ParticipantRole.LEADING_TEACHER),
+            new SubjectParticipant(accounts.get(2), subjects.get(0), ParticipantRole.STUDENT),
+
+            new SubjectParticipant(accounts.get(4), subjects.get(1), ParticipantRole.LEADING_TEACHER),
+            new SubjectParticipant(accounts.get(2), subjects.get(1), ParticipantRole.STUDENT),
+            new SubjectParticipant(accounts.get(3), subjects.get(1), ParticipantRole.STUDENT)
+    );
+
     static {
-        subjects.get(0).getParticipants().addAll(List.of(
-                new SubjectParticipant(accounts.get(1), subjects.get(0), ParticipantRole.LEADING_TEACHER),
-                new SubjectParticipant(accounts.get(2), subjects.get(0), ParticipantRole.STUDENT)
-        ));
-        subjects.get(1).getParticipants().addAll(List.of(
-                new SubjectParticipant(accounts.get(4), subjects.get(1), ParticipantRole.LEADING_TEACHER),
-                new SubjectParticipant(accounts.get(2), subjects.get(1), ParticipantRole.STUDENT),
-                new SubjectParticipant(accounts.get(3), subjects.get(1), ParticipantRole.STUDENT)
-        ));
+        for(var p : subjectParticipants) {
+            p.getSubject().getParticipants().add(p);
+        }
     }
 
     @BeforeEach
@@ -93,7 +100,7 @@ public class SubjectPermissionServiceTest {
 
         userDetailsService = new AccountDetailsServiceImpl(accountRepository, roleHierarchy);
         roleHierarchyService = new RoleHierarchyService(roleHierarchy, userDetailsService);
-        service = new SubjectPermissionService(roleHierarchyService);
+        service = new SubjectPermissionService(roleHierarchyService, subjectParticipantRepository);
     }
 
     @AfterEach
@@ -112,6 +119,7 @@ public class SubjectPermissionServiceTest {
     void testPermissions(String authUsername, long targetId, Set<SubjectPermission> expected) {
         TestMocks.stubAccountRepositoryByUsername(accountRepository, accounts);
         TestMocks.stubSubjectRepositoryById(subjectRepository, subjects);
+        TestMocks.stubSubjectParticipantRepositoryById(subjectParticipantRepository, subjectParticipants);
 
         var auth = authenticateAs(authUsername, accountRepository, roleHierarchy);
         var grade = subjectRepository.findById(targetId).orElseThrow();

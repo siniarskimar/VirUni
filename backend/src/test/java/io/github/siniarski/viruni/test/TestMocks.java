@@ -1,11 +1,9 @@
 package io.github.siniarski.viruni.test;
 
-import io.github.siniarski.viruni.model.Account;
-import io.github.siniarski.viruni.model.AccountRole;
-import io.github.siniarski.viruni.model.Grade;
-import io.github.siniarski.viruni.model.Subject;
+import io.github.siniarski.viruni.model.*;
 import io.github.siniarski.viruni.repository.AccountRepository;
 import io.github.siniarski.viruni.repository.GradeRepository;
+import io.github.siniarski.viruni.repository.SubjectParticipantRepository;
 import io.github.siniarski.viruni.repository.SubjectRepository;
 import io.github.siniarski.viruni.service.RoleHierarchyService;
 import org.mockito.ArgumentMatchers;
@@ -92,6 +90,24 @@ public final class TestMocks {
                     Subject grade = idIndex.getOrDefault(query, null);
                     if(grade == null) return Optional.empty();
                     return Optional.of(grade);
+                });
+    }
+
+    public static void stubSubjectParticipantRepositoryById(SubjectParticipantRepository repository,
+                                                            List<SubjectParticipant> participants) {
+        Map<SubjectParticipantId, SubjectParticipant> idIndex = participants.stream()
+                .collect(Collectors.toMap(
+                        SubjectParticipant::getId,
+                        p -> p,
+                        (o, n) -> n
+                ));
+
+        Mockito.lenient().when(repository.findById(ArgumentMatchers.any(SubjectParticipantId.class)))
+                .thenAnswer(inv -> {
+                    SubjectParticipantId query = inv.getArgument(0);
+                    var participant = idIndex.getOrDefault(query, null);
+                    if(participant == null) return Optional.empty();
+                    return Optional.of(participant);
                 });
     }
 
