@@ -1,6 +1,7 @@
 package io.github.siniarski.viruni.repository;
 
 import io.github.siniarski.viruni.model.Subject;
+import io.github.siniarski.viruni.model.SubjectParticipantId;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -21,4 +22,5 @@ public interface SubjectRepository extends JpaRepository<Subject, Long>,
             "WHERE a.id IN (:accountIds) " +
             " AND a.id NOT IN (SELECT p.participants_id FROM subject_participants p WHERE p.subjects_id = :id)")
     void saveParticipantsByIds(Long id, Set<Long> accountIds);
+
 }

@@ -59,4 +59,8 @@ public class SubjectParticipant {
     public void setRole(ParticipantRole role) {
         this.role = role;
     }
+
+    public SubjectParticipantId getId() {
+        return id;
+    }
 }
