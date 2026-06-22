@@ -23,6 +23,17 @@ public class SubjectParticipant {
     @ManyToOne
     private ParticipantRole role;
 
+    public SubjectParticipant (Account participant,
+                               Subject subject,
+                               ParticipantRole role) {
+        this.participant = participant;
+        this.subject = subject;
+        this.role = role;
+        this.id = new SubjectParticipantId(participant.getId(), subject.getId());
+    }
+
+    protected SubjectParticipant() {}
+
     public void setParticipant(Account participant) {
         this.participant = participant;
         this.id = new SubjectParticipantId(participant.getId(), this.id.getSubjectId());

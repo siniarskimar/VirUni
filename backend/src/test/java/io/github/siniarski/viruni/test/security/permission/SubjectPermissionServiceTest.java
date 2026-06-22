@@ -1,8 +1,6 @@
 package io.github.siniarski.viruni.test.security.permission;
 
-import io.github.siniarski.viruni.model.Account;
-import io.github.siniarski.viruni.model.AccountRole;
-import io.github.siniarski.viruni.model.Subject;
+import io.github.siniarski.viruni.model.*;
 import io.github.siniarski.viruni.repository.AccountRepository;
 import io.github.siniarski.viruni.repository.SubjectRepository;
 import io.github.siniarski.viruni.security.auth.AccountDetailsServiceImpl;
@@ -26,10 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,23 +56,33 @@ public class SubjectPermissionServiceTest {
             new Subject(
                     0,
                     "Principles of Macroeconomics",
-                    accounts.get(1), // teacher: johndep
                     null,
                     Instant.now(),
-                    Set.of(accounts.get(1), accounts.get(2)),
+                    new HashSet<>(),
                     new ArrayList<>()
             ),
             // new subject
             new Subject(
                     1,
                     "Linear Algebra",
-                    accounts.get(4), // teacher: maria.santos
                     null,
                     Instant.now(),
-                    Set.of(accounts.get(4), accounts.get(2), accounts.get(3)),
+                    new HashSet<>(),
                     new ArrayList<>()
             )
     );
+
+    static {
+        subjects.get(0).getParticipants().addAll(List.of(
+                new SubjectParticipant(accounts.get(1), subjects.get(0), ParticipantRole.LEADING_TEACHER),
+                new SubjectParticipant(accounts.get(2), subjects.get(0), ParticipantRole.STUDENT)
+        ));
+        subjects.get(1).getParticipants().addAll(List.of(
+                new SubjectParticipant(accounts.get(4), subjects.get(1), ParticipantRole.LEADING_TEACHER),
+                new SubjectParticipant(accounts.get(2), subjects.get(1), ParticipantRole.STUDENT),
+                new SubjectParticipant(accounts.get(3), subjects.get(1), ParticipantRole.STUDENT)
+        ));
+    }
 
     @BeforeEach
     void beforeEach() {

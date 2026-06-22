@@ -20,10 +20,6 @@ public class Subject {
     @Column(nullable = false)
     private String name;
 
-    @ManyToOne
-    @JoinColumn(nullable = false)
-    private Account leadingTeacher;
-
     private String description;
 
     @CreationTimestamp
@@ -31,7 +27,7 @@ public class Subject {
 
     @JsonIgnore
     @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    private Set<Account> participants;
+    private Set<SubjectParticipant> participants;
 
     @JsonIgnore
     @OneToMany(mappedBy = "subject")
@@ -42,20 +38,21 @@ public class Subject {
     public Subject(String name, Account teacher) {
         setId(0);
         setName(name);
-        this.participants = new HashSet<>();
-        setLeadingTeacher(teacher);
+        this.participants = new HashSet<>(
+                List.of(
+                        new SubjectParticipant(teacher, this, ParticipantRole.LEADING_TEACHER)
+                )
+        );
     }
 
     public Subject(long id,
                    String name,
-                   Account leadingTeacher,
                    String description,
                    Instant createdAt,
-                   Set<Account> participants,
+                   Set<SubjectParticipant> participants,
                    List<Grade> grades) {
         this.id = id;
         this.name = name;
-        this.leadingTeacher = leadingTeacher;
         this.description = description;
         this.createdAt = createdAt;
         this.participants = participants;
@@ -78,16 +75,8 @@ public class Subject {
         this.name = name;
     }
 
-    public Set<Account> getParticipants() {
+    public Set<SubjectParticipant> getParticipants() {
         return participants;
-    }
-
-    public void setLeadingTeacher(Account teacher) {
-        this.leadingTeacher = teacher;
-    }
-
-    public Account getLeadingTeacher() {
-        return this.leadingTeacher;
     }
 
     public List<Grade> getGrades() {
